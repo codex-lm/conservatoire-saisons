@@ -44,18 +44,17 @@ Progress, the current garden and its undo history, language and sound preference
 
 The camera never rotates. Interactive objects have distinct silhouettes, the walkable terrain uses bright surfaces, and essential controls remain available on narrow screens. Reduced-motion preferences disable ambient weather and shorten transitions. All interface and hint text is available in EN/FR/ES.
 
-## Develop and build
+## Export and development
 
-Editable sources are retained beside the generated export:
+The `main` branch is the standalone static export accepted by LOB7. Editable sources are retained beside the generated entrypoint:
 
 - `src/core.js`: deterministic grid rules, pushing, pressure plates, undo/reset, pathfinding and defensive serialization.
 - `src/levels.js`: seven modifiable garden maps, names and translated progressive hints.
 - `src/renderer.js`: original Canvas 2D isometric artwork, guardian, hub and seasonal animation.
 - `src/game.js`: commands, interface translations, WebAudio, progression and local save.
 - `src/index.template.html`, `src/styles.css`: semantic interface and responsive presentation.
-- `build.py`: standard-library Python builder that inlines the sources into `index.html`.
 
-Rebuild and run the tests:
+The [`development` branch](https://github.com/codex-lm/conservatoire-saisons/tree/development) also contains `build.py`, `art/render_cover.py` and the complete Node test suite. Switch to that branch to rebuild and test:
 
 ```sh
 python build.py

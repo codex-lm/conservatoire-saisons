@@ -1,6 +1,6 @@
 # Verified garden solutions
 
-These are reference solutions, not the only possible solutions. They are encoded in `tests/solutions.js` and replayed by `node --test tests/*.test.js`.
+These are reference solutions, not the only possible solutions. They are encoded in `tests/solutions.js` on the [`development` branch](https://github.com/codex-lm/conservatoire-saisons/tree/development) and replayed by `node --test tests/*.test.js`.
 
 Notation: **W** winter, **P** spring, **S** summer, **A** autumn; **↑ ↓ ← →** move or push one grid cell. Every sequence begins from a fresh garden and ends on the exit with its light seed collected.
 
