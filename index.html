@@ -1,0 +1,2145 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <meta name="theme-color" content="#203f3b">
+  <meta name="description" content="A gentle isometric puzzle game about a tiny mechanical gardener, four seasons and seven suspended gardens.">
+  <title>The Conservatory of Seasons</title>
+  <style>:root {
+  color-scheme: dark;
+  --ink: #183b37;
+  --deep: #173c39;
+  --deep-2: #25534a;
+  --cream: #fff5dc;
+  --paper: #f6edcf;
+  --gold: #f0bd63;
+  --mint: #a9d7a4;
+  --line: rgba(255, 245, 220, .18);
+  --glass: rgba(20, 55, 49, .76);
+  --shadow: 0 24px 70px rgba(9, 31, 30, .28);
+  font-family: "Trebuchet MS", "Segoe UI", sans-serif;
+  font-synthesis: none;
+}
+
+* { box-sizing: border-box; }
+html, body { margin: 0; min-height: 100%; }
+body { background: #183d39; color: var(--cream); overflow-x: hidden; }
+button, select { font: inherit; }
+button { color: inherit; }
+button:focus-visible, select:focus-visible, canvas:focus-visible { outline: 3px solid #ffe293; outline-offset: 3px; }
+button { -webkit-tap-highlight-color: transparent; }
+[hidden] { display: none !important; }
+.sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0,0,0,0); white-space: nowrap; border: 0; }
+
+#app { min-height: 100vh; min-height: 100dvh; position: relative; isolation: isolate; padding: 0 clamp(14px, 3vw, 46px); background: radial-gradient(circle at 50% -20%, #497461 0, transparent 48%), linear-gradient(145deg, #173b38, #102f32 70%); transition: background 1s; }
+#app[data-season="winter"] { background: radial-gradient(circle at 50% -20%, #779aa0 0, transparent 48%), linear-gradient(145deg, #294a54, #18343f 70%); }
+#app[data-season="summer"] { background: radial-gradient(circle at 50% -20%, #9b8953 0, transparent 48%), linear-gradient(145deg, #355844, #173e36 70%); }
+#app[data-season="autumn"] { background: radial-gradient(circle at 50% -20%, #94644b 0, transparent 48%), linear-gradient(145deg, #493e35, #253b36 70%); }
+.ambient { position: fixed; z-index: -1; border-radius: 50%; filter: blur(80px); opacity: .12; pointer-events: none; }
+.ambient-one { width: 40vw; height: 40vw; background: #d7efb1; left: -18vw; top: 35vh; }
+.ambient-two { width: 35vw; height: 35vw; background: #f1bd6e; right: -12vw; top: -8vh; }
+
+.topbar { max-width: 1500px; margin: auto; min-height: 94px; display: flex; align-items: center; justify-content: space-between; gap: 20px; border-bottom: 1px solid var(--line); }
+.brand { display: flex; gap: 12px; align-items: center; background: none; border: 0; padding: 10px 0; text-align: left; cursor: pointer; }
+.brand-mark { width: 45px; height: 45px; flex: 0 0 auto; display: grid; place-items: center; border: 1px solid rgba(244, 211, 137, .45); border-radius: 50% 50% 46% 54%; color: #f3cf81; transform: rotate(-4deg); }
+.brand-mark svg { width: 33px; height: 33px; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+.brand strong { display: block; font-family: Georgia, serif; font-weight: 500; font-size: clamp(17px, 1.7vw, 25px); letter-spacing: -.02em; }
+.brand small { display: block; margin-top: 4px; font-size: 10px; letter-spacing: .12em; text-transform: uppercase; opacity: .62; }
+.top-actions { display: flex; align-items: center; gap: 8px; }
+.language-control select { appearance: none; border: 1px solid var(--line); background: rgba(11, 38, 36, .35); color: var(--cream); border-radius: 20px; padding: 9px 13px; cursor: pointer; font-size: 12px; font-weight: 700; letter-spacing: .08em; }
+.language-control option { background: #1b433d; }
+.icon-button { min-height: 40px; display: flex; align-items: center; gap: 7px; border: 1px solid var(--line); background: rgba(11, 38, 36, .25); border-radius: 22px; padding: 8px 13px; cursor: pointer; font-size: 12px; }
+.icon-button:hover { background: rgba(255,255,255,.09); }
+.icon-button > span:first-child { color: #f2cc7b; font-family: Georgia, serif; font-weight: 700; font-size: 18px; }
+
+.main-shell { max-width: 1500px; margin: clamp(16px, 2.5vh, 30px) auto 0; display: grid; grid-template-columns: minmax(0, 1fr) 276px; gap: 20px; align-items: stretch; }
+.garden-frame { min-width: 0; border: 1px solid rgba(255, 245, 220, .2); border-radius: 26px; overflow: hidden; background: rgba(9, 35, 33, .36); box-shadow: var(--shadow); display: flex; flex-direction: column; }
+.canvas-wrap { position: relative; min-height: 430px; flex: 1; overflow: hidden; background: #274f48; }
+#garden-canvas { display: block; width: 100%; height: 100%; min-height: 430px; cursor: default; touch-action: manipulation; }
+.scene-heading { position: absolute; pointer-events: none; top: 18px; left: 20px; max-width: calc(100% - 175px); padding: 10px 14px; border: 1px solid rgba(255,245,220,.14); border-radius: 13px; background: linear-gradient(100deg, rgba(19,54,48,.74), rgba(19,54,48,.38)); text-shadow: 0 2px 10px rgba(8,31,30,.45); backdrop-filter: blur(5px); }
+.eyebrow { display: block; font-size: 10px; line-height: 1.4; letter-spacing: .19em; font-weight: 700; color: #f4cd7d; text-transform: uppercase; }
+.scene-heading h1 { font-family: Georgia, serif; font-weight: 400; font-size: clamp(22px, 2.4vw, 35px); line-height: 1.05; margin: 6px 0 0; max-width: 440px; }
+.hub-button { position: absolute; right: 20px; top: 20px; display: flex; gap: 7px; align-items: center; background: rgba(19, 53, 48, .76); border: 1px solid rgba(255,255,255,.25); border-radius: 20px; padding: 8px 12px; cursor: pointer; backdrop-filter: blur(8px); font-size: 11px; }
+.click-tip { position: absolute; bottom: 14px; left: 50%; transform: translateX(-50%); padding: 6px 12px; border-radius: 14px; background: rgba(17, 48, 45, .58); color: rgba(255,245,220,.74); font-size: 10px; letter-spacing: .04em; pointer-events: none; opacity: .8; white-space: nowrap; }
+.toast, .season-toast { position: absolute; left: 50%; transform: translate(-50%, 12px); bottom: 48px; max-width: min(90%, 450px); padding: 11px 17px; border-radius: 14px; background: rgba(255, 245, 220, .95); color: #25433c; box-shadow: 0 8px 30px rgba(10,30,28,.24); font-size: 13px; text-align: center; opacity: 0; pointer-events: none; transition: opacity .2s, transform .2s; z-index: 4; }
+.toast.visible, .season-toast.visible { opacity: 1; transform: translate(-50%, 0); }
+.season-toast { top: 24px; bottom: auto; background: rgba(24, 59, 55, .88); color: var(--cream); border: 1px solid rgba(255,255,255,.18); font-family: Georgia, serif; font-style: italic; }
+
+.season-dock { display: grid; grid-template-columns: repeat(4, 1fr); gap: 1px; padding: 10px; background: rgba(12, 39, 36, .9); border-top: 1px solid var(--line); }
+.season-button { position: relative; min-height: 65px; border: 1px solid transparent; border-radius: 15px; background: transparent; display: flex; justify-content: center; align-items: center; gap: 8px; cursor: pointer; color: rgba(255,245,220,.64); transition: background .2s, color .2s, transform .2s; }
+.season-button:hover { background: rgba(255,255,255,.06); color: var(--cream); }
+.season-button:active { transform: scale(.97); }
+.season-button svg { width: 26px; height: 26px; fill: none; stroke: currentColor; stroke-width: 1.7; stroke-linecap: round; stroke-linejoin: round; }
+.season-button span { font-size: 12px; font-weight: 700; }
+.season-button kbd { position: absolute; right: 8px; top: 7px; font-size: 9px; opacity: .42; }
+.season-button[aria-pressed="true"] { background: var(--cream); color: #274840; box-shadow: 0 5px 18px rgba(0,0,0,.16); }
+.season-button[data-season="winter"][aria-pressed="true"] { background: #dceff0; color: #325a69; }
+.season-button[data-season="spring"][aria-pressed="true"] { background: #e0efca; color: #3e6448; }
+.season-button[data-season="summer"][aria-pressed="true"] { background: #ffe18b; color: #755022; }
+.season-button[data-season="autumn"][aria-pressed="true"] { background: #f2c09a; color: #793f31; }
+
+.garden-nav { display: grid; grid-template-columns: repeat(7, 1fr); gap: 7px; padding: 12px; background: rgba(12, 39, 36, .88); border-top: 1px solid var(--line); }
+.garden-node { min-width: 0; border: 1px solid rgba(255,255,255,.12); border-radius: 13px; padding: 8px 4px; background: rgba(255,255,255,.025); cursor: pointer; text-align: center; position: relative; }
+.garden-node:hover { background: rgba(255,255,255,.08); }
+.garden-node[aria-current="true"] { border-color: #f2cc7b; background: rgba(242,204,123,.12); }
+.garden-node .node-number { display: block; font-family: Georgia, serif; font-size: 17px; }
+.garden-node .node-state { display: block; height: 12px; margin-top: 2px; color: #f5ce76; font-size: 11px; }
+.garden-node.final .node-number { color: #f3c57d; }
+
+.side-panel { border: 1px solid rgba(255, 245, 220, .18); border-radius: 26px; background: var(--glass); box-shadow: var(--shadow); backdrop-filter: blur(18px); display: flex; flex-direction: column; overflow: hidden; }
+.panel-section { padding: 25px 22px 18px; flex: 1; }
+.progress-heading { display: flex; justify-content: space-between; align-items: center; font-size: 11px; text-transform: uppercase; letter-spacing: .11em; }
+.progress-heading strong { color: #f3cd7c; font-family: Georgia, serif; font-size: 16px; font-weight: 400; letter-spacing: 0; }
+.progress-track { height: 4px; margin: 12px 0 22px; background: rgba(255,255,255,.1); border-radius: 3px; overflow: hidden; }
+.progress-track span { display: block; height: 100%; width: 0; background: linear-gradient(90deg, #91c69a, #f4d07b); border-radius: inherit; transition: width .8s; }
+.soft-copy { color: rgba(255,245,220,.65); font-size: 12px; line-height: 1.65; }
+.selected-garden { margin-top: 30px; min-height: 165px; }
+.selected-garden h2, .level-panel h2 { font-family: Georgia, serif; font-weight: 400; font-size: 26px; line-height: 1.12; margin: 8px 0 12px; }
+.selected-garden p { font-size: 12px; line-height: 1.55; color: rgba(255,245,220,.62); }
+.primary-button { width: 100%; min-height: 47px; display: flex; align-items: center; justify-content: space-between; gap: 12px; border: 0; border-radius: 14px; padding: 13px 16px; background: #f2ce83; color: #25453d; cursor: pointer; font-weight: 700; font-size: 12px; box-shadow: 0 5px 16px rgba(7,28,25,.18); }
+.primary-button:hover { background: #ffe0a0; }
+.objective-label { display: flex; align-items: center; gap: 8px; color: #f3ce80; text-transform: uppercase; font-size: 10px; letter-spacing: .15em; }
+.seed-mini { font-size: 18px; }
+.level-panel h2 { font-size: 21px; margin-top: 12px; }
+.status-row { display: flex; justify-content: space-between; gap: 8px; font-size: 10px; color: rgba(255,245,220,.57); margin: 16px 0; }
+#seed-status.taken { color: #f5d37e; }
+.action-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.action-grid button { position: relative; min-height: 49px; display: flex; justify-content: center; align-items: center; gap: 6px; border: 1px solid rgba(255,255,255,.15); border-radius: 12px; background: rgba(255,255,255,.045); cursor: pointer; font-size: 11px; }
+.action-grid button:hover:not(:disabled) { background: rgba(255,255,255,.1); }
+.action-grid button:disabled { opacity: .35; cursor: default; }
+.action-grid kbd { position: absolute; right: 6px; top: 5px; opacity: .4; font-size: 8px; }
+.rule-message { margin: 12px 0 0; padding: 10px 12px; border-left: 3px solid #f0c873; border-radius: 8px; background: rgba(240,200,115,.1); color: #ffe2a0; font-size: 11px; line-height: 1.45; }
+.hint-card { margin-top: 18px; padding: 14px; background: rgba(244,223,170,.07); border: 1px solid rgba(244,223,170,.13); border-radius: 15px; }
+.hint-heading { display: flex; justify-content: space-between; color: #edcd8a; font-size: 10px; text-transform: uppercase; letter-spacing: .09em; }
+.hint-card p { min-height: 49px; font-size: 11px; line-height: 1.55; color: rgba(255,245,220,.67); }
+.text-button { display: flex; align-items: center; justify-content: space-between; gap: 10px; border: 0; padding: 5px 0; background: none; color: #f2d18b; cursor: pointer; font-size: 11px; }
+.text-button:hover { color: #ffe5ae; }
+.rules-mini { display: grid; gap: 8px; margin-top: 18px; }
+.rules-mini > div { display: flex; gap: 8px; align-items: center; font-size: 10px; color: rgba(255,245,220,.58); }
+.rule-dot { width: 8px; height: 8px; flex: 0 0 auto; border-radius: 50%; box-shadow: 0 0 8px currentColor; }
+.rule-dot.ice { background: #c9edf1; color: #c9edf1; }.rule-dot.vine { background: #9ed79b; color: #9ed79b; }.rule-dot.sun { background: #ffd36e; color: #ffd36e; }.rule-dot.fruit { background: #dc8a52; color: #dc8a52; }
+.panel-footer { display: flex; gap: 8px; align-items: center; padding: 14px 20px; border-top: 1px solid var(--line); color: rgba(255,245,220,.4); font-size: 9px; line-height: 1.4; }
+.tiny-leaf { color: #b8ce9c; font-size: 18px; }
+.controls-footer { max-width: 1500px; margin: 12px auto 0; min-height: 35px; display: flex; justify-content: center; align-items: center; gap: 10px; color: rgba(255,245,220,.4); font-size: 10px; }
+kbd { font-family: inherit; border: 1px solid currentColor; border-radius: 3px; padding: 1px 3px; }
+
+.paper-dialog { width: min(92vw, 570px); max-height: 88vh; overflow-y: auto; border: 1px solid rgba(255,255,255,.5); border-radius: 25px; padding: 34px; background: #f4edda; color: #29483f; box-shadow: 0 30px 100px rgba(5,25,22,.5); }
+.paper-dialog::backdrop { background: rgba(8, 30, 28, .68); backdrop-filter: blur(7px); }
+.paper-dialog .eyebrow { color: #9a733e; }
+.paper-dialog h2 { font-family: Georgia, serif; font-weight: 400; font-size: 34px; line-height: 1.1; margin: 9px 0 14px; }
+.paper-dialog p { font-size: 13px; line-height: 1.65; color: #587066; }
+.paper-dialog .primary-button { margin-top: 20px; background: #2e5a4c; color: #fff4d8; }
+.dialog-close { position: absolute; top: 13px; right: 15px; width: 33px; height: 33px; border-radius: 50%; border: 1px solid #c8c5ad; background: none; color: #49665c; cursor: pointer; font-size: 22px; }
+.help-seasons { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 20px; }
+.help-seasons > div { padding: 13px; border: 1px solid #d6d4bd; border-radius: 12px; }
+.help-seasons b { font-family: Georgia, serif; font-weight: 400; font-size: 17px; }
+.help-seasons p { font-size: 11px; margin: 5px 0 0; }
+.help-note { padding: 10px 13px; border-left: 3px solid #c59852; background: #eae1c8; }
+.key-list { display: flex; flex-wrap: wrap; gap: 10px 16px; margin-top: 18px; font-size: 11px; }
+.key-list kbd { margin-right: 4px; }
+.complete-dialog, .conclusion-dialog { text-align: center; }
+.complete-dialog .primary-button, .conclusion-dialog .primary-button { justify-content: center; }
+.complete-dialog .text-button { margin: 12px auto 0; color: #536f60; }
+.completion-seed { font-size: 62px; color: #d99e3e; filter: drop-shadow(0 0 18px #e7bc61); animation: seedPulse 2s ease-in-out infinite; }
+.dialog-actions { margin-top: 15px; }
+.conclusion-wreath { width: 110px; height: 110px; display: grid; place-items: center; margin: 0 auto 20px; border: 2px solid #8ba76e; border-radius: 47% 53% 45% 55%; box-shadow: inset 0 0 0 8px #e2e4bb, 0 0 30px #d5bd67; }
+.conclusion-wreath span { font-size: 55px; color: #d59c3f; }
+@keyframes seedPulse { 50% { transform: translateY(-5px) rotate(8deg); filter: drop-shadow(0 0 25px #e7bc61); } }
+
+@media (min-width: 1150px) and (min-height: 780px) {
+  .canvas-wrap, #garden-canvas { min-height: 540px; }
+}
+@media (max-width: 1000px) {
+  .main-shell { grid-template-columns: minmax(0, 1fr) 235px; gap: 12px; }
+  .panel-section { padding: 20px 17px 14px; }
+  .selected-garden h2 { font-size: 22px; }
+  .canvas-wrap, #garden-canvas { min-height: 450px; }
+  .button-label { display: none; }
+}
+@media (max-width: 760px) {
+  #app { padding: 0 10px; }
+  .topbar { min-height: 70px; gap: 8px; }
+  .brand-mark { width: 37px; height: 37px; }
+  .brand-mark svg { width: 27px; height: 27px; }
+  .brand strong { font-size: 16px; max-width: 230px; }
+  .brand small { display: none; }
+  .top-actions { gap: 5px; }
+  .icon-button { min-width: 36px; min-height: 36px; padding: 6px 9px; }
+  .language-control select { padding: 8px; }
+  .main-shell { display: flex; flex-direction: column; margin-top: 10px; gap: 10px; }
+  .garden-frame, .side-panel { border-radius: 19px; }
+  .canvas-wrap, #garden-canvas { min-height: 390px; height: 52vh; max-height: 540px; }
+  .scene-heading { top: 16px; left: 17px; }
+  .scene-heading h1 { font-size: 23px; max-width: 270px; }
+  .hub-button { right: 12px; top: 12px; padding: 7px 9px; }
+  .hub-button span:last-child { display: none; }
+  .click-tip { font-size: 9px; bottom: 9px; }
+  .season-dock { padding: 7px 5px; }
+  .season-button { min-height: 55px; flex-direction: column; gap: 2px; }
+  .season-button svg { width: 22px; height: 22px; }
+  .season-button span { font-size: 10px; }
+  .season-button kbd { display: none; }
+  .side-panel { order: 2; }
+  .panel-section { padding: 16px; }
+  .hub-panel { display: grid; grid-template-columns: 1fr auto; column-gap: 15px; align-items: center; }
+  .hub-panel .progress-heading, .hub-panel .progress-track, .hub-panel .soft-copy { grid-column: 1 / -1; }
+  .hub-panel .progress-track { margin: 8px 0 10px; }
+  .hub-panel .soft-copy { display: none; }
+  .selected-garden { min-height: 0; margin-top: 5px; }
+  .selected-garden h2 { font-size: 19px; margin: 4px 0; }
+  .selected-garden p { display: none; }
+  .hub-panel .primary-button { width: auto; min-width: 145px; }
+  .level-panel { display: grid; grid-template-columns: 1fr 1fr; gap: 10px 16px; }
+  .level-panel .objective-label, .level-panel h2, .level-panel .status-row { grid-column: 1; }
+  .level-panel h2 { font-size: 17px; margin: 0; }
+  .level-panel .status-row { margin: 0; }
+  .action-grid { grid-column: 2; grid-row: 1 / 4; align-self: center; }
+  .hint-card { grid-column: 1 / -1; margin-top: 0; padding: 10px 12px; }
+  .hint-card p { min-height: 0; margin: 8px 0; }
+  .rules-mini { display: none; }
+  .panel-footer { display: none; }
+  .controls-footer { display: none; }
+  .garden-nav { gap: 4px; padding: 8px; }
+  .garden-node { padding: 6px 2px; }
+  .paper-dialog { padding: 28px 22px; }
+  .paper-dialog h2 { font-size: 28px; }
+}
+@media (max-width: 430px) {
+  .brand strong { max-width: 175px; font-size: 14px; }
+  .brand { gap: 7px; }
+  .brand-mark { width: 32px; height: 32px; }
+  .top-actions .icon-button { padding: 5px 8px; min-width: 31px; }
+  .canvas-wrap, #garden-canvas { min-height: 345px; height: 47vh; }
+  .scene-heading h1 { font-size: 20px; max-width: 230px; }
+  .eyebrow { font-size: 8px; }
+  .level-panel { gap: 8px 10px; }
+  .level-panel h2 { font-size: 15px; }
+  .action-grid button { min-height: 45px; font-size: 10px; }
+  .help-seasons { grid-template-columns: 1fr; }
+}
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation-duration: .001ms !important; animation-iteration-count: 1 !important; scroll-behavior: auto !important; transition-duration: .001ms !important; }
+}
+</style>
+</head>
+<body>
+  <div id="app" data-season="spring">
+    <div class="ambient ambient-one"></div>
+    <div class="ambient ambient-two"></div>
+    <header class="topbar">
+      <button id="brand-button" class="brand" type="button" aria-label="Open the central conservatory">
+        <span class="brand-mark" aria-hidden="true">
+          <svg viewBox="0 0 44 44"><path d="M22 37V19"/><path d="M22 25C10 25 8 16 8 10c9 0 14 4 14 12"/><path d="M22 20C23 10 30 6 37 7c0 9-5 15-15 15"/><path d="M13 37h18"/></svg>
+        </span>
+        <span><strong data-i18n="title">The Conservatory of Seasons</strong><small data-i18n="byline">A little gardener. Four seasons. Seven gardens.</small></span>
+      </button>
+      <div class="top-actions">
+        <label class="language-control"><span class="sr-only">Language</span><select id="language" aria-label="Language"><option value="en">EN</option><option value="fr">FR</option><option value="es">ES</option></select></label>
+        <button id="sound-button" class="icon-button" type="button" aria-pressed="true" data-i18n-aria="soundOff"><span id="sound-icon" aria-hidden="true">♪</span><span class="button-label" data-i18n="sound">Sound</span></button>
+        <button id="help-button" class="icon-button" type="button" data-i18n-aria="help"><span aria-hidden="true">?</span><span class="button-label" data-i18n="help">How to play</span></button>
+      </div>
+    </header>
+
+    <main class="main-shell">
+      <section class="garden-frame" aria-label="Game board">
+        <div class="canvas-wrap" id="canvas-wrap">
+          <canvas id="garden-canvas" tabindex="0" aria-label="Isometric garden. Use arrow keys or WASD to move."></canvas>
+          <div class="scene-heading">
+            <span id="scene-eyebrow" class="eyebrow">CENTRAL CONSERVATORY</span>
+            <h1 id="scene-title">The Conservatory of Seasons</h1>
+          </div>
+          <div id="season-toast" class="season-toast" role="status" aria-live="polite"></div>
+          <div id="toast" class="toast" role="status" aria-live="polite"></div>
+          <button id="hub-button" class="hub-button" type="button" hidden><span aria-hidden="true">⌂</span><span data-i18n="conservatory">Conservatory</span></button>
+          <div id="click-tip" class="click-tip" data-i18n="clickTip">Click a lit tile to walk there</div>
+        </div>
+        <div id="season-dock" class="season-dock" aria-label="Seasons" hidden>
+          <button class="season-button" data-season="winter" type="button" aria-pressed="false">
+            <svg viewBox="0 0 32 32" aria-hidden="true"><path d="M16 3v26M5 9l22 14M5 23L27 9M12 6l4 4 4-4M12 26l4-4 4 4M5 14l6 1-1-6M27 18l-6-1 1 6M5 18l6-1-1 6M27 14l-6 1 1-6"/></svg>
+            <span data-i18n="winter">Winter</span><kbd>1</kbd>
+          </button>
+          <button class="season-button" data-season="spring" type="button" aria-pressed="false">
+            <svg viewBox="0 0 32 32" aria-hidden="true"><path d="M16 28V14M16 20C7 20 5 13 5 7c8 0 12 4 11 11M16 15C17 7 23 4 28 5c0 7-4 12-12 12"/></svg>
+            <span data-i18n="spring">Spring</span><kbd>2</kbd>
+          </button>
+          <button class="season-button" data-season="summer" type="button" aria-pressed="false">
+            <svg viewBox="0 0 32 32" aria-hidden="true"><circle cx="16" cy="16" r="6"/><path d="M16 2v4M16 26v4M2 16h4M26 16h4M6 6l3 3M23 23l3 3M6 26l3-3M23 9l3-3"/></svg>
+            <span data-i18n="summer">Summer</span><kbd>3</kbd>
+          </button>
+          <button class="season-button" data-season="autumn" type="button" aria-pressed="false">
+            <svg viewBox="0 0 32 32" aria-hidden="true"><path d="M27 4C14 4 6 9 6 18c0 5 4 8 8 7 9-1 12-10 13-21Z"/><path d="M4 29 21 12M11 22l-1-8M16 17l7 1"/></svg>
+            <span data-i18n="autumn">Autumn</span><kbd>4</kbd>
+          </button>
+        </div>
+        <nav id="garden-nav" class="garden-nav" aria-label="Gardens"></nav>
+      </section>
+
+      <aside class="side-panel">
+        <section id="hub-panel" class="panel-section hub-panel">
+          <div class="progress-heading"><span data-i18n="restoration">Restoration</span><strong id="progress-count">0 / 7</strong></div>
+          <div class="progress-track"><span id="progress-fill"></span></div>
+          <p id="hub-description" class="soft-copy" data-i18n="hubIntro">Seven sleeping gardens wait above the clouds. Bring back their light seeds.</p>
+          <div class="selected-garden"><span id="selected-number" class="eyebrow">GARDEN I</span><h2 id="selected-title">The Glasshouse Gate</h2><p id="selected-subtitle"></p></div>
+          <button id="enter-button" class="primary-button" type="button"><span data-i18n="enterGarden">Enter garden</span><span aria-hidden="true">→</span></button>
+        </section>
+
+        <section id="level-panel" class="panel-section level-panel" hidden>
+          <div class="objective-label"><span class="seed-mini" aria-hidden="true">✦</span><span data-i18n="objective">Objective</span></div>
+          <h2 data-i18n="seedObjective">Find the light seed, then reach the arch.</h2>
+          <div class="status-row"><span id="seed-status" data-i18n="seedWaiting">Seed waiting</span><span id="move-count">0 moves</span></div>
+          <div class="action-grid">
+            <button id="undo-button" type="button"><span aria-hidden="true">↶</span><span data-i18n="undo">Undo</span><kbd>Z</kbd></button>
+            <button id="reset-button" type="button"><span aria-hidden="true">↺</span><span data-i18n="reset">Reset</span><kbd>R</kbd></button>
+          </div>
+          <p id="rule-message" class="rule-message" role="status" aria-live="polite" hidden></p>
+          <div class="hint-card">
+            <div class="hint-heading"><span data-i18n="hintTitle">A gentle nudge</span><span id="hint-step">0 / 3</span></div>
+            <p id="hint-text" data-i18n="hintPrompt">Observe first. Three hints are here if you need them.</p>
+            <button id="hint-button" class="text-button" type="button"><span data-i18n="revealHint">Reveal the next hint</span><span aria-hidden="true">＋</span></button>
+          </div>
+          <div class="rules-mini">
+            <div><span class="rule-dot ice"></span><span data-i18n="ruleIce">Ice carries you and objects.</span></div>
+            <div><span class="rule-dot vine"></span><span data-i18n="ruleVine">Vines bridge the open gaps.</span></div>
+            <div><span class="rule-dot sun"></span><span data-i18n="ruleSun">Sunflowers power every plate-fed door.</span></div>
+            <div><span class="rule-dot fruit"></span><span data-i18n="ruleFruit">Fallen fruit stays where you push it.</span></div>
+          </div>
+        </section>
+        <footer class="panel-footer"><span class="tiny-leaf" aria-hidden="true">❧</span><span data-i18n="saveNote">Your restoration is saved on this device.</span></footer>
+      </aside>
+    </main>
+
+    <footer class="controls-footer"><span data-i18n="moveControls">Arrows / WASD / ZQSD to move</span><span class="footer-separator">•</span><span data-i18n="seasonControls">1–4 to change season</span><span class="footer-separator">•</span><span data-i18n="undoControls">Z to undo</span></footer>
+  </div>
+
+  <dialog id="help-dialog" class="paper-dialog">
+    <button class="dialog-close" type="button" data-close="help-dialog" aria-label="Close">×</button>
+    <span class="eyebrow" data-i18n="gardenerManual">THE GARDENER’S LITTLE MANUAL</span>
+    <h2 data-i18n="helpTitle">Let the garden change.</h2>
+    <p data-i18n="helpIntro">Explore at your own pace. Nothing here needs quick reflexes.</p>
+    <div class="help-seasons">
+      <div><b data-i18n="winter">Winter</b><p data-i18n="winterHelp">Basins freeze into solid paths.</p></div>
+      <div><b data-i18n="spring">Spring</b><p data-i18n="springHelp">Lianas grow over pale open gaps.</p></div>
+      <div><b data-i18n="summer">Summer</b><p data-i18n="summerHelp">Sunflowers open doors when every round plate is weighed down.</p></div>
+      <div><b data-i18n="autumn">Autumn</b><p data-i18n="autumnHelp">Trees release heavy fruit. Fruit and planters keep their positions in every season.</p></div>
+    </div>
+    <p class="help-note" data-i18n="safetyHelp">A season that would strand the gardener or an object is refused. Undo any move or season, or reset the garden without losing restored gardens.</p>
+    <div class="key-list"><span><kbd>↑↓←→</kbd> <span data-i18n="move">Move</span></span><span><kbd>1–4</kbd> <span data-i18n="seasons">Seasons</span></span><span><kbd>Z</kbd> <span data-i18n="undo">Undo</span></span><span><kbd>R</kbd> <span data-i18n="reset">Reset</span></span><span><kbd>H</kbd> <span data-i18n="hint">Hint</span></span><span><kbd>M</kbd> <span data-i18n="sound">Sound</span></span></div>
+    <button class="primary-button" type="button" data-close="help-dialog" data-i18n="backGarden">Back to the garden</button>
+  </dialog>
+
+  <dialog id="complete-dialog" class="paper-dialog complete-dialog">
+    <div class="completion-seed" aria-hidden="true">✦</div>
+    <span class="eyebrow" data-i18n="gardenRestored">GARDEN RESTORED</span>
+    <h2 id="complete-title">The Glasshouse Gate</h2>
+    <p id="complete-copy" data-i18n="restoredCopy">A light seed returns to the conservatory. Somewhere, an old flower wakes.</p>
+    <div class="dialog-actions"><button id="continue-button" class="primary-button" type="button"><span data-i18n="returnConservatory">Return to the conservatory</span><span aria-hidden="true">→</span></button><button id="replay-button" class="text-button" type="button" data-i18n="replayGarden">Replay this garden</button></div>
+  </dialog>
+
+  <dialog id="conclusion-dialog" class="paper-dialog conclusion-dialog">
+    <div class="conclusion-wreath" aria-hidden="true"><span>✦</span></div>
+    <span class="eyebrow" data-i18n="restorationComplete">THE RESTORATION IS COMPLETE</span>
+    <h2 data-i18n="conclusionTitle">The conservatory breathes again.</h2>
+    <p data-i18n="conclusionCopy">Seven lights glow beneath the glass. The little gardener’s work will keep growing, season after season.</p>
+    <button id="wander-button" class="primary-button" type="button" data-i18n="wander">Wander through the restored gardens</button>
+  </dialog>
+
+  <script>(function (root, factory) {
+  const levels = factory();
+  if (typeof module === "object" && module.exports) module.exports = levels;
+  else root.CONSERVATORY_LEVELS = levels;
+})(typeof globalThis !== "undefined" ? globalThis : this, function () {
+  return [
+    {
+      id: "winter-awakening",
+      number: 1,
+      name: { en: "A Breath of Winter", fr: "Un souffle d’hiver", es: "Un soplo de invierno" },
+      subtitle: { en: "The water remembers how to carry you.", fr: "L’eau se souvient comment te porter.", es: "El agua recuerda cómo sostenerte." },
+      map: [
+        "gggwwwggg",
+        "gggwwwggg",
+        "gggwwwggg",
+        "gggwwwggg",
+        "gggwwwggg",
+        "gggwwwggg",
+        "gggwwwggg"
+      ],
+      start: { x: 1, y: 3 }, initialSeason: "spring", seed: { x: 6, y: 2 }, exit: { x: 6, y: 4 }, objects: [],
+      hints: {
+        en: ["The basin is beautiful, but your little feet are not waterproof.", "One season turns the whole central basin into a firm blue path.", "Choose winter, cross the ice to the seed, then walk south to the glowing arch."],
+        fr: ["Le bassin est beau, mais tes petits pieds ne sont pas étanches.", "Une saison transforme tout le bassin central en un chemin bleu et solide.", "Choisis l’hiver, traverse la glace jusqu’à la graine, puis descends vers l’arche lumineuse."],
+        es: ["El estanque es precioso, pero tus pequeños pies no son impermeables.", "Una estación convierte todo el estanque central en un camino azul y firme.", "Elige invierno, cruza el hielo hasta la semilla y baja hacia el arco luminoso."]
+      }
+    },
+    {
+      id: "liana-promise",
+      number: 2,
+      name: { en: "The Liana’s Promise", fr: "La promesse de la liane", es: "La promesa de la liana" },
+      subtitle: { en: "A bridge that blooms only when it is needed.", fr: "Un pont qui fleurit quand on en a besoin.", es: "Un puente que florece cuando lo necesitas." },
+      map: [
+        "ggg  ggg",
+        "ggg  ggg",
+        "ggg  ggg",
+        "gggvvggg",
+        "ggg  ggg",
+        "ggg  ggg"
+      ],
+      start: { x: 1, y: 3 }, initialSeason: "summer", seed: { x: 6, y: 2 }, exit: { x: 6, y: 4 }, objects: [],
+      hints: {
+        en: ["The pale dashed tiles are not holes forever.", "Spring wakes the two liana beds between the islands.", "Choose spring and cross the green vines. Collect the seed north of the far bank, then go south to the arch."],
+        fr: ["Les cases pâles pointillées ne resteront pas des vides.", "Le printemps réveille les deux lianes entre les îles.", "Choisis le printemps et traverse les lianes vertes. Prends la graine au nord de l’autre rive, puis descends vers l’arche."],
+        es: ["Las casillas pálidas de puntos no serán huecos para siempre.", "La primavera despierta las dos lianas entre las islas.", "Elige primavera y cruza las lianas verdes. Recoge la semilla al norte de la otra orilla y baja hacia el arco."]
+      }
+    },
+    {
+      id: "sunlit-lock",
+      number: 3,
+      name: { en: "The Sunlit Lock", fr: "La serrure du soleil", es: "La cerradura del sol" },
+      subtitle: { en: "A little weight, a little sunlight.", fr: "Un peu de poids, un peu de soleil.", es: "Un poco de peso, un poco de sol." },
+      map: [
+        "ggggxggg",
+        "gtggxggg",
+        "ggggxggg",
+        "ggggdggg",
+        "gggpxggg",
+        "ggggxggg",
+        "ggggxggg"
+      ],
+      start: { x: 1, y: 4 }, initialSeason: "spring", seed: { x: 6, y: 2 }, exit: { x: 6, y: 4 },
+      objects: [{ id: "planter-a", type: "planter", x: 2, y: 4, released: true }],
+      hints: {
+        en: ["The round plate and the door are parts of the same mechanism.", "Push the mobile planter onto the plate. The flower beside the door still needs sunlight.", "Push the planter right onto the plate, choose summer, then walk through the central door to the seed and the arch."],
+        fr: ["La plaque ronde et la porte appartiennent au même mécanisme.", "Pousse la jardinière mobile sur la plaque. La fleur près de la porte a encore besoin de soleil.", "Pousse la jardinière vers la droite sur la plaque, choisis l’été, puis franchis la porte centrale vers la graine et l’arche."],
+        es: ["La placa redonda y la puerta forman el mismo mecanismo.", "Empuja la jardinera móvil hasta la placa. La flor junto a la puerta aún necesita sol.", "Empuja la jardinera a la derecha hasta la placa, elige verano y cruza la puerta central hacia la semilla y el arco."]
+      }
+    },
+    {
+      id: "copper-harvest",
+      number: 4,
+      name: { en: "The Copper Harvest", fr: "La récolte de cuivre", es: "La cosecha de cobre" },
+      subtitle: { en: "Autumn gives the sun something to carry.", fr: "L’automne donne au soleil quelque chose à porter.", es: "El otoño le da al sol algo que llevar." },
+      map: [
+        "ggggxggg",
+        "ggggxggg",
+        "ggtgdggg",
+        "gggpxggg",
+        "ggggxggg",
+        "ggggxggg",
+        "ggggxggg"
+      ],
+      start: { x: 1, y: 3 }, initialSeason: "spring", seed: { x: 6, y: 1 }, exit: { x: 6, y: 4 },
+      objects: [{ id: "fruit-a", type: "fruit", x: 2, y: 3, released: false }],
+      hints: {
+        en: ["The empty plate needs something heavier than a gardener.", "Autumn releases the tree’s fruit. Once fallen, it can be pushed in any season.", "In autumn, push the fruit right onto the plate. Choose summer, then go around the tree by the north path to reach the open door."],
+        fr: ["La plaque vide a besoin de quelque chose de plus lourd qu’un gardien.", "L’automne libère le fruit de l’arbre. Une fois tombé, il peut être poussé en toute saison.", "En automne, pousse le fruit à droite sur la plaque. Choisis l’été, puis contourne l’arbre par le nord pour atteindre la porte ouverte."],
+        es: ["La placa vacía necesita algo más pesado que un jardinero.", "El otoño libera el fruto del árbol. Una vez caído, puedes empujarlo en cualquier estación.", "En otoño, empuja el fruto a la derecha hasta la placa. Elige verano y rodea el árbol por el norte para llegar a la puerta abierta."]
+      }
+    },
+    {
+      id: "glasshouse-gate",
+      number: 5,
+      name: { en: "The Glasshouse Gate", fr: "La porte de la serre", es: "La puerta del invernadero" },
+      subtitle: { en: "Four seasons, one patient machine.", fr: "Quatre saisons, une machine patiente.", es: "Cuatro estaciones, una máquina paciente." },
+      map: [
+        "ggggwwggggg",
+        "ggggwwggggg",
+        "ggtgwwgvgdg",
+        "ggggwwp ggg",
+        "gggg    ggg",
+        "gggg    ggg"
+      ],
+      start: { x: 1, y: 5 }, initialSeason: "spring", seed: { x: 10, y: 1 }, exit: { x: 10, y: 3 },
+      objects: [
+        { id: "fruit-a", type: "fruit", x: 2, y: 3, released: false },
+        { id: "planter-a", type: "planter", x: 8, y: 4, released: true }
+      ],
+      hints: {
+        en: ["The fruit, the pale gap and the golden door each listen to a different season.", "Autumn releases the fruit. Winter can carry it to the round plate across the water.", "Push the fruit onto the plate in winter. In spring, cross the vine north of the plate. On the island, switch to summer and pass the door."],
+        fr: ["Le fruit, le vide pâle et la porte dorée répondent chacun à une saison différente.", "L’automne libère le fruit. L’hiver permet de le porter jusqu’à la plaque ronde, au-delà de l’eau.", "Pousse le fruit sur la plaque en hiver. Au printemps, traverse la liane au nord de la plaque. Sur l’île, passe à l’été et franchis la porte."],
+        es: ["El fruto, el hueco pálido y la puerta dorada responden a estaciones distintas.", "El otoño libera el fruto. El invierno permite llevarlo hasta la placa redonda al otro lado del agua.", "Empuja el fruto hasta la placa en invierno. En primavera, cruza la enredadera al norte de la placa. En la isla, cambia a verano y pasa la puerta."]
+      }
+    },
+    {
+      id: "floating-orchard",
+      number: 6,
+      name: { en: "The Floating Orchard", fr: "Le verger flottant", es: "El huerto flotante" },
+      subtitle: { en: "Two burdens. Two crossings. One golden door.", fr: "Deux fardeaux. Deux traversées. Une porte dorée.", es: "Dos cargas. Dos cruces. Una puerta dorada." },
+      map: [
+        "ggggwwg ggg",
+        "ggtgwwg ggg",
+        "ggggwwp ggg",
+        "ggggwwgvgdg",
+        "ggggwwp ggg",
+        "ggggww  ggg",
+        "gggg    ggg"
+      ],
+      start: { x: 1, y: 5 }, initialSeason: "spring", seed: { x: 10, y: 2 }, exit: { x: 10, y: 4 },
+      objects: [
+        { id: "fruit-a", type: "fruit", x: 2, y: 2, released: false },
+        { id: "planter-a", type: "planter", x: 2, y: 4, released: true }
+      ],
+      hints: {
+        en: ["Both round plates must stay weighted when you choose summer.", "Release the fruit in autumn. In winter, each object can be pushed across a different strip of ice.", "Push the fruit onto the north plate and the planter onto the south plate in winter. Cross the central liana in spring, then choose summer on the island."],
+        fr: ["Les deux plaques rondes doivent rester lestées quand tu choisis l’été.", "Libère le fruit en automne. En hiver, chaque objet peut être poussé sur une bande de glace différente.", "En hiver, pousse le fruit sur la plaque nord et la jardinière sur la plaque sud. Traverse la liane centrale au printemps, puis choisis l’été sur l’île."],
+        es: ["Las dos placas redondas deben conservar el peso al elegir verano.", "Libera el fruto en otoño. En invierno, cada objeto puede cruzar por una franja de hielo distinta.", "En invierno, empuja el fruto a la placa norte y la jardinera a la placa sur. Cruza la liana central en primavera y elige verano en la isla."]
+      }
+    },
+    {
+      id: "heart-conservatory",
+      number: 7,
+      name: { en: "Heart of the Conservatory", fr: "Le cœur du conservatoire", es: "El corazón del conservatorio" },
+      subtitle: { en: "Every season has a part to play.", fr: "Chaque saison a un rôle à jouer.", es: "Cada estación tiene un papel." },
+      map: [
+        "ggggwwg ggxg gg",
+        "ggtgwwg ggxg gg",
+        "ggggwwgvggdgvgg",
+        "ggggwwp ggxg gg",
+        "ggggwwg pgxg gg",
+        "ggggwwg ggxg gg",
+        "ggggwwg ggxg gg"
+      ],
+      start: { x: 1, y: 5 }, initialSeason: "spring", seed: { x: 13, y: 1 }, exit: { x: 13, y: 3 },
+      objects: [
+        { id: "fruit-a", type: "fruit", x: 2, y: 3, released: false },
+        { id: "planter-a", type: "planter", x: 8, y: 3, released: true }
+      ],
+      hints: {
+        en: ["The last garden asks you to leave mechanisms behind and keep moving between seasons.", "The fruit belongs on the bank plate; the planter belongs on the middle island’s lower plate. Both need to stay there.", "Use autumn and winter to place the fruit. Spring opens the first liana; push the planter down. Summer opens the door. Beyond it, spring opens the second liana."],
+        fr: ["Le dernier jardin demande de laisser des mécanismes derrière toi et de continuer à changer de saison.", "Le fruit va sur la plaque de la rive ; la jardinière va sur la plaque basse de l’île centrale. Ils doivent y rester.", "Utilise l’automne puis l’hiver pour placer le fruit. Le printemps ouvre la première liane ; pousse la jardinière vers le bas. L’été ouvre la porte. De l’autre côté, le printemps ouvre la seconde liane."],
+        es: ["El último jardín te pide dejar mecanismos atrás y seguir cambiando de estación.", "El fruto va en la placa de la orilla; la jardinera, en la placa inferior de la isla central. Ambos deben quedarse allí.", "Usa otoño e invierno para colocar el fruto. La primavera abre la primera liana; empuja la jardinera hacia abajo. El verano abre la puerta. Al otro lado, la primavera abre la segunda liana."]
+      }
+    }
+  ];
+});
+</script>
+  <script>(function (root, factory) {
+  const api = factory();
+  if (typeof module === "object" && module.exports) module.exports = api;
+  else root.ConservatoryCore = api;
+})(typeof globalThis !== "undefined" ? globalThis : this, function () {
+  "use strict";
+
+  const SEASONS = ["winter", "spring", "summer", "autumn"];
+  const DIRECTIONS = {
+    up: { x: 0, y: -1 },
+    down: { x: 0, y: 1 },
+    left: { x: -1, y: 0 },
+    right: { x: 1, y: 0 }
+  };
+
+  function clone(value) {
+    return JSON.parse(JSON.stringify(value));
+  }
+
+  function same(a, b) {
+    return a.x === b.x && a.y === b.y;
+  }
+
+  function keyOf(x, y) {
+    return x + "," + y;
+  }
+
+  function tileAt(level, x, y) {
+    if (y < 0 || y >= level.map.length || x < 0 || x >= level.map[y].length) return " ";
+    return level.map[y][x] || " ";
+  }
+
+  function initialState(level) {
+    return {
+      levelId: level.id,
+      season: level.initialSeason || "spring",
+      player: clone(level.start),
+      objects: level.objects.map(function (object) {
+        return {
+          id: object.id,
+          type: object.type,
+          x: object.x,
+          y: object.y,
+          released: object.released !== false
+        };
+      }),
+      seedTaken: false,
+      completed: false,
+      moves: 0
+    };
+  }
+
+  function activeObjects(state) {
+    return state.objects.filter(function (object) { return object.released; });
+  }
+
+  function objectAt(state, x, y, exceptId) {
+    return activeObjects(state).find(function (object) {
+      return object.id !== exceptId && object.x === x && object.y === y;
+    }) || null;
+  }
+
+  function plates(level) {
+    const result = [];
+    level.map.forEach(function (row, y) {
+      Array.from(row).forEach(function (tile, x) {
+        if (tile === "p") result.push({ x: x, y: y });
+      });
+    });
+    return result;
+  }
+
+  function platePressed(state, level, plate) {
+    return activeObjects(state).some(function (object) {
+      return object.x === plate.x && object.y === plate.y;
+    });
+  }
+
+  function doorOpen(state, level) {
+    if (state.season !== "summer") return false;
+    return plates(level).every(function (plate) { return platePressed(state, level, plate); });
+  }
+
+  function supports(state, level, x, y, forObject) {
+    const tile = tileAt(level, x, y);
+    if (["g", "p", "e", "b"].includes(tile)) return true;
+    if (tile === "w") return state.season === "winter";
+    if (tile === "v") return state.season === "spring";
+    if (tile === "d") return doorOpen(state, level) && !forObject;
+    return false;
+  }
+
+  function canOccupy(state, level, x, y) {
+    return supports(state, level, x, y, false) && !objectAt(state, x, y);
+  }
+
+  function canSupportObject(state, level, x, y, exceptId) {
+    return supports(state, level, x, y, true) && !objectAt(state, x, y, exceptId);
+  }
+
+  function fruitDropProblem(state, level) {
+    const unreleased = state.objects.filter(function (object) {
+      return object.type === "fruit" && !object.released;
+    });
+    for (const fruit of unreleased) {
+      if (same(state.player, fruit)) return "fruitPlayer";
+      if (objectAt(state, fruit.x, fruit.y, fruit.id)) return "fruitObject";
+      if (!canSupportObject(state, level, fruit.x, fruit.y, fruit.id)) return "fruitTerrain";
+    }
+    return null;
+  }
+
+  function seasonProblem(state, level, season) {
+    const candidate = clone(state);
+    candidate.season = season;
+    if (season === "autumn") {
+      const dropProblem = fruitDropProblem(candidate, level);
+      if (dropProblem) return dropProblem;
+      candidate.objects.forEach(function (object) {
+        if (object.type === "fruit") object.released = true;
+      });
+    }
+    if (!supports(candidate, level, candidate.player.x, candidate.player.y, false)) return "unsafePlayer";
+    for (const object of activeObjects(candidate)) {
+      if (!canSupportObject(candidate, level, object.x, object.y, object.id)) return "unsafeObject";
+    }
+    return null;
+  }
+
+  function applyToState(state, level, action) {
+    if (state.completed) return { ok: false, reason: "completed", state: state, events: [] };
+    if (action.type === "season") {
+      if (!SEASONS.includes(action.season)) return { ok: false, reason: "unknownSeason", state: state, events: [] };
+      if (action.season === state.season) return { ok: false, reason: "sameSeason", state: state, events: [] };
+      const problem = seasonProblem(state, level, action.season);
+      if (problem) return { ok: false, reason: problem, state: state, events: ["invalid"] };
+      const next = clone(state);
+      const dropped = [];
+      next.season = action.season;
+      if (action.season === "autumn") {
+        next.objects.forEach(function (object) {
+          if (object.type === "fruit" && !object.released) {
+            object.released = true;
+            dropped.push(object.id);
+          }
+        });
+      }
+      next.moves += 1;
+      return { ok: true, state: next, events: ["season"].concat(dropped.length ? ["fruitDropped"] : []) };
+    }
+
+    if (action.type !== "move") return { ok: false, reason: "unknownAction", state: state, events: [] };
+    const direction = action.direction ? DIRECTIONS[action.direction] : action;
+    if (!direction || !Number.isInteger(direction.x) || !Number.isInteger(direction.y) || Math.abs(direction.x) + Math.abs(direction.y) !== 1) {
+      return { ok: false, reason: "badDirection", state: state, events: [] };
+    }
+    const target = { x: state.player.x + direction.x, y: state.player.y + direction.y };
+    if (!supports(state, level, target.x, target.y, false)) {
+      return { ok: false, reason: "blocked", state: state, events: ["bump"] };
+    }
+    const object = objectAt(state, target.x, target.y);
+    const next = clone(state);
+    const events = [];
+    if (object) {
+      const beyond = { x: target.x + direction.x, y: target.y + direction.y };
+      if (!canSupportObject(state, level, beyond.x, beyond.y, object.id)) {
+        return { ok: false, reason: "blockedObject", state: state, events: ["bump"] };
+      }
+      const nextObject = next.objects.find(function (item) { return item.id === object.id; });
+      nextObject.x = beyond.x;
+      nextObject.y = beyond.y;
+      events.push("pushed");
+    }
+    next.player = target;
+    next.moves += 1;
+    events.push("step");
+    if (!next.seedTaken && same(next.player, level.seed)) {
+      next.seedTaken = true;
+      events.push("seed");
+    }
+    if (next.seedTaken && same(next.player, level.exit)) {
+      next.completed = true;
+      events.push("complete");
+    }
+    return { ok: true, state: next, events: events };
+  }
+
+  function stateKey(state) {
+    return JSON.stringify([
+      state.season,
+      state.player.x,
+      state.player.y,
+      state.seedTaken,
+      state.completed,
+      state.objects.map(function (object) {
+        return [object.id, object.x, object.y, object.released];
+      })
+    ]);
+  }
+
+  function findPath(state, level, destination, maxStates) {
+    if (same(state.player, destination)) return [];
+    const limit = maxStates || 6000;
+    const queue = [{ state: clone(state), actions: [] }];
+    const seen = new Set([stateKey(state)]);
+    for (let index = 0; index < queue.length && index < limit; index += 1) {
+      const current = queue[index];
+      for (const name of Object.keys(DIRECTIONS)) {
+        const result = applyToState(current.state, level, { type: "move", direction: name });
+        if (!result.ok) continue;
+        const actions = current.actions.concat([{ type: "move", direction: name }]);
+        if (same(result.state.player, destination)) return actions;
+        const key = stateKey(result.state);
+        if (!seen.has(key)) {
+          seen.add(key);
+          queue.push({ state: result.state, actions: actions });
+        }
+      }
+    }
+    return null;
+  }
+
+  function validState(state, level) {
+    if (!state || state.levelId !== level.id || !SEASONS.includes(state.season)) return false;
+    if (!state.player || !Number.isInteger(state.player.x) || !Number.isInteger(state.player.y)) return false;
+    if (!Array.isArray(state.objects) || state.objects.length !== level.objects.length) return false;
+    if (!supports(state, level, state.player.x, state.player.y, false)) return false;
+    const ids = new Set();
+    for (const original of level.objects) {
+      const object = state.objects.find(function (item) { return item.id === original.id; });
+      if (!object || object.type !== original.type || ids.has(object.id)) return false;
+      if (!Number.isInteger(object.x) || !Number.isInteger(object.y)) return false;
+      if (object.released && !canSupportObject(state, level, object.x, object.y, object.id)) return false;
+      if (object.released && same(state.player, object)) return false;
+      ids.add(object.id);
+    }
+    return true;
+  }
+
+  class Game {
+    constructor(level) {
+      this.level = level;
+      this.state = initialState(level);
+      this.history = [];
+    }
+
+    dispatch(action) {
+      if (action.type === "undo") return this.undo();
+      if (action.type === "reset") return this.reset();
+      const result = applyToState(this.state, this.level, action);
+      if (result.ok) {
+        this.history.push(clone(this.state));
+        if (this.history.length > 300) this.history.shift();
+        this.state = result.state;
+      }
+      return result;
+    }
+
+    undo() {
+      if (!this.history.length) return { ok: false, reason: "emptyHistory", state: this.state, events: ["bump"] };
+      this.state = this.history.pop();
+      return { ok: true, state: this.state, events: ["undo"] };
+    }
+
+    reset() {
+      this.state = initialState(this.level);
+      this.history = [];
+      return { ok: true, state: this.state, events: ["reset"] };
+    }
+
+    serialize() {
+      return JSON.stringify({ version: 1, levelId: this.level.id, state: this.state, history: this.history });
+    }
+
+    static restore(level, serialized) {
+      const game = new Game(level);
+      try {
+        const saved = typeof serialized === "string" ? JSON.parse(serialized) : serialized;
+        if (!saved || saved.version !== 1 || saved.levelId !== level.id || !validState(saved.state, level)) return game;
+        game.state = clone(saved.state);
+        game.history = Array.isArray(saved.history) ? saved.history.filter(function (state) {
+          return validState(state, level);
+        }).slice(-300).map(clone) : [];
+      } catch (error) {
+        return game;
+      }
+      return game;
+    }
+  }
+
+  return {
+    SEASONS: SEASONS,
+    DIRECTIONS: DIRECTIONS,
+    clone: clone,
+    same: same,
+    keyOf: keyOf,
+    tileAt: tileAt,
+    initialState: initialState,
+    activeObjects: activeObjects,
+    objectAt: objectAt,
+    plates: plates,
+    platePressed: platePressed,
+    doorOpen: doorOpen,
+    supports: supports,
+    canOccupy: canOccupy,
+    canSupportObject: canSupportObject,
+    seasonProblem: seasonProblem,
+    applyToState: applyToState,
+    stateKey: stateKey,
+    findPath: findPath,
+    validState: validState,
+    Game: Game
+  };
+});
+</script>
+  <script>(function (root) {
+  "use strict";
+
+  const Core = root.ConservatoryCore;
+  const PALETTES = {
+    winter: { sky: "#c7dfe1", horizon: "#779da5", distant: "#527881", top: "#aec4bf", side: "#637f7c", soil: "#8b7964", leaf: "#8fb4ae", accent: "#e9f8f4", glow: "#d9f6ff" },
+    spring: { sky: "#d7e4bd", horizon: "#86ad94", distant: "#4f7b6b", top: "#9dbb79", side: "#617d55", soil: "#8b7658", leaf: "#6e9e64", accent: "#f2b9c5", glow: "#fff1ac" },
+    summer: { sky: "#f3d99a", horizon: "#8bb17f", distant: "#527c5f", top: "#a9bb68", side: "#687b48", soil: "#94744d", leaf: "#4f8a4e", accent: "#ffd46d", glow: "#ffe89a" },
+    autumn: { sky: "#eac69d", horizon: "#a47d67", distant: "#705e50", top: "#b18a5d", side: "#775c45", soil: "#806047", leaf: "#b6673e", accent: "#e79b63", glow: "#ffd38a" }
+  };
+
+  function clamp(value, min, max) { return Math.max(min, Math.min(max, value)); }
+  function lerp(a, b, amount) { return a + (b - a) * amount; }
+  function smooth(value) { const v = clamp(value, 0, 1); return v * v * (3 - 2 * v); }
+  function hash(x, y, seed) { const value = Math.sin(x * 127.1 + y * 311.7 + (seed || 0) * 71.3) * 43758.5453; return value - Math.floor(value); }
+  function rgb(color) {
+    if (color.slice(0, 3) === "rgb") {
+      const channels = color.match(/[\d.]+/g);
+      return channels.slice(0, 3).map(Number);
+    }
+    const value = color.replace("#", "");
+    return [parseInt(value.slice(0, 2), 16), parseInt(value.slice(2, 4), 16), parseInt(value.slice(4, 6), 16)];
+  }
+  function mix(a, b, amount) {
+    const aa = rgb(a), bb = rgb(b);
+    return "rgb(" + Math.round(lerp(aa[0], bb[0], amount)) + "," + Math.round(lerp(aa[1], bb[1], amount)) + "," + Math.round(lerp(aa[2], bb[2], amount)) + ")";
+  }
+  function rgba(hex, alpha) { const c = rgb(hex); return "rgba(" + c[0] + "," + c[1] + "," + c[2] + "," + alpha + ")"; }
+
+  class ConservatoryRenderer {
+    constructor(canvas, levels) {
+      this.canvas = canvas;
+      this.ctx = canvas.getContext("2d");
+      this.levels = levels;
+      this.regions = [];
+      this.onFrame = null;
+      this.season = "spring";
+      this.previousSeason = "spring";
+      this.seasonStart = performance.now();
+      this.reducedMotion = root.matchMedia && root.matchMedia("(prefers-reduced-motion: reduce)").matches;
+      this.layout = null;
+      this.width = 0;
+      this.height = 0;
+      this.dpr = 1;
+      this.particles = Array.from({ length: 34 }, function (_, index) {
+        return { x: hash(index, 2, 1), y: hash(index, 4, 2), speed: .35 + hash(index, 7, 4) * .65, drift: hash(index, 9, 3) * 2 - 1, size: 1 + hash(index, 11, 8) * 2 };
+      });
+    }
+
+    setSeason(season, instant) {
+      if (season === this.season && !instant) return;
+      this.previousSeason = instant ? season : this.season;
+      this.season = season;
+      this.seasonStart = instant ? performance.now() - 1000 : performance.now();
+    }
+
+    start() {
+      const frame = (time) => {
+        if (this.onFrame) this.onFrame(time);
+        root.requestAnimationFrame(frame);
+      };
+      root.requestAnimationFrame(frame);
+    }
+
+    resize() {
+      const rect = this.canvas.getBoundingClientRect();
+      const dpr = Math.min(root.devicePixelRatio || 1, 2);
+      const width = Math.max(1, Math.round(rect.width));
+      const height = Math.max(1, Math.round(rect.height));
+      if (width !== this.width || height !== this.height || dpr !== this.dpr) {
+        this.width = width;
+        this.height = height;
+        this.dpr = dpr;
+        this.canvas.width = Math.round(width * dpr);
+        this.canvas.height = Math.round(height * dpr);
+      }
+      this.ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    }
+
+    seasonAmount(name, time) {
+      if (this.reducedMotion) return this.season === name ? 1 : 0;
+      const amount = smooth((time - this.seasonStart) / 700);
+      if (this.season === name) return amount;
+      if (this.previousSeason === name) return 1 - amount;
+      return 0;
+    }
+
+    palette(time) {
+      const amount = this.reducedMotion ? 1 : smooth((time - this.seasonStart) / 700);
+      const from = PALETTES[this.previousSeason];
+      const to = PALETTES[this.season];
+      const result = {};
+      Object.keys(to).forEach((key) => { result[key] = mix(from[key], to[key], amount); });
+      return result;
+    }
+
+    draw(model) {
+      this.resize();
+      this.regions = [];
+      const time = model.time || performance.now();
+      const palette = this.palette(time);
+      this.drawBackground(time, palette, model.mode === "hub", model.completed ? model.completed.length : 0);
+      if (model.mode === "hub" || !model.game) this.drawHub(model, time, palette);
+      else this.drawLevel(model, time, palette);
+      this.drawWeather(time, model.mode === "hub" ? "spring" : this.season, model.mode === "hub" && model.completed.length === this.levels.length);
+    }
+
+    drawBackground(time, palette, hub, restored) {
+      const ctx = this.ctx, w = this.width, h = this.height;
+      const gradient = ctx.createLinearGradient(0, 0, 0, h);
+      gradient.addColorStop(0, palette.sky);
+      gradient.addColorStop(.58, palette.horizon);
+      gradient.addColorStop(1, palette.distant);
+      ctx.fillStyle = gradient;
+      ctx.fillRect(0, 0, w, h);
+
+      const glow = ctx.createRadialGradient(w * .72, h * .08, 0, w * .72, h * .08, w * .48);
+      glow.addColorStop(0, "rgba(255,245,197,.42)");
+      glow.addColorStop(1, "rgba(255,245,197,0)");
+      ctx.fillStyle = glow;
+      ctx.fillRect(0, 0, w, h);
+
+      ctx.save();
+      ctx.globalAlpha = hub ? .26 : .18;
+      ctx.strokeStyle = "#315c55";
+      ctx.lineWidth = 2;
+      const archWidth = Math.max(100, w / 6);
+      for (let x = -archWidth * .3; x < w + archWidth; x += archWidth) {
+        const top = -archWidth * .35;
+        ctx.beginPath();
+        ctx.moveTo(x, h * .76);
+        ctx.lineTo(x, archWidth * .5);
+        ctx.arc(x + archWidth * .5, archWidth * .5, archWidth * .5, Math.PI, 0);
+        ctx.lineTo(x + archWidth, h * .76);
+        ctx.stroke();
+        ctx.beginPath();
+        ctx.moveTo(x + archWidth * .5, top + archWidth * .35);
+        ctx.lineTo(x + archWidth * .5, h * .75);
+        ctx.stroke();
+      }
+      ctx.restore();
+
+      ctx.save();
+      ctx.fillStyle = "rgba(242,245,216,.17)";
+      for (let index = 0; index < 5; index += 1) {
+        const x = (index * 263 + 50) % (w + 180) - 90;
+        const y = h * (.55 + (index % 3) * .1);
+        ctx.beginPath();
+        ctx.ellipse(x, y, 110, 19, 0, 0, Math.PI * 2);
+        ctx.ellipse(x + 65, y + 3, 80, 13, 0, 0, Math.PI * 2);
+        ctx.fill();
+      }
+      ctx.restore();
+
+      ctx.save();
+      ctx.strokeStyle = "rgba(41,91,64,.32)";
+      ctx.fillStyle = "rgba(67,113,72,.3)";
+      ctx.lineWidth = 2;
+      for (let index = 0; index < 7; index += 1) {
+        const x = (index + .5) * w / 7;
+        const length = 28 + hash(index, 3, 9) * 75;
+        ctx.beginPath();
+        ctx.moveTo(x, 0);
+        ctx.bezierCurveTo(x - 8, length * .35, x + 12, length * .65, x + Math.sin(time / 1700 + index) * 4, length);
+        ctx.stroke();
+        for (let leaf = 0; leaf < 3; leaf += 1) {
+          const yy = length * (.3 + leaf * .22);
+          ctx.beginPath();
+          ctx.ellipse(x + (leaf % 2 ? 5 : -5), yy, 6, 3, leaf % 2 ? .5 : -.5, 0, Math.PI * 2);
+          ctx.fill();
+        }
+      }
+      ctx.restore();
+
+      if (hub && restored) {
+        ctx.save();
+        ctx.globalAlpha = .05 + restored * .015;
+        ctx.fillStyle = "#fff5b8";
+        ctx.beginPath();
+        ctx.moveTo(w * .58, 0);
+        ctx.lineTo(w * .88, h);
+        ctx.lineTo(w * .52, h);
+        ctx.closePath();
+        ctx.fill();
+        ctx.restore();
+      }
+    }
+
+    configureLevelLayout(level) {
+      const points = [];
+      level.map.forEach(function (row, y) {
+        Array.from(row).forEach(function (tile, x) {
+          if (tile !== " ") points.push({ x: (x - y) * 36, y: (x + y) * 18 });
+        });
+      });
+      const minX = Math.min.apply(null, points.map(function (p) { return p.x; })) - 36;
+      const maxX = Math.max.apply(null, points.map(function (p) { return p.x; })) + 36;
+      const minY = Math.min.apply(null, points.map(function (p) { return p.y; })) - 15;
+      const maxY = Math.max.apply(null, points.map(function (p) { return p.y; })) + 50;
+      const scale = Math.min((this.width - 42) / (maxX - minX), (this.height - 122) / (maxY - minY + 75), 1.3);
+      this.layout = {
+        scale: Math.max(.32, scale),
+        ox: this.width * .5 - (minX + maxX) * .5 * Math.max(.32, scale),
+        oy: this.height * .53 - (minY + maxY) * .5 * Math.max(.32, scale) + 16
+      };
+    }
+
+    configureHubLayout() {
+      const scale = Math.max(.4, Math.min(this.width / 760, (this.height - 60) / 510, 1.3));
+      this.layout = { scale: scale, ox: this.width * .5, oy: this.height * .45 - 72 * scale };
+    }
+
+    project(x, y, z) {
+      const layout = this.layout;
+      return {
+        x: layout.ox + (x - y) * 36 * layout.scale,
+        y: layout.oy + (x + y) * 18 * layout.scale - (z || 0) * layout.scale
+      };
+    }
+
+    diamond(center, width, height) {
+      const ctx = this.ctx;
+      ctx.beginPath();
+      ctx.moveTo(center.x, center.y - height / 2);
+      ctx.lineTo(center.x + width / 2, center.y);
+      ctx.lineTo(center.x, center.y + height / 2);
+      ctx.lineTo(center.x - width / 2, center.y);
+      ctx.closePath();
+    }
+
+    drawFloor(x, y, tile, state, level, time, palette) {
+      const ctx = this.ctx, s = this.layout.scale, p = this.project(x, y);
+      const tw = 72 * s, th = 36 * s, depth = 10 * s;
+      const winter = this.seasonAmount("winter", time), spring = this.seasonAmount("spring", time);
+      const walkable = Core.supports(state, level, x, y, false);
+      if (tile === "v" && spring < .02) {
+        this.diamond({ x: p.x, y: p.y + 8 * s }, tw * .9, th * .86);
+        ctx.fillStyle = "rgba(28,65,62,.48)";
+        ctx.fill();
+        ctx.strokeStyle = "rgba(225,237,199,.24)";
+        ctx.lineWidth = Math.max(1, s);
+        ctx.setLineDash([3 * s, 5 * s]);
+        ctx.stroke();
+        ctx.setLineDash([]);
+      } else {
+        let top = palette.top;
+        if (tile === "w") top = mix("#3c7d88", "#709aa5", winter * .4);
+        if (tile === "t" || tile === "x") top = palette.soil;
+        if (tile === "d") top = "#9c946d";
+        if (tile === "e") top = "#9aa778";
+        const variation = hash(x, y, 4) * .08;
+        ctx.fillStyle = mix(palette.side, "#243f3b", .18 + variation);
+        ctx.beginPath();
+        ctx.moveTo(p.x - tw / 2, p.y);
+        ctx.lineTo(p.x, p.y + th / 2);
+        ctx.lineTo(p.x, p.y + th / 2 + depth);
+        ctx.lineTo(p.x - tw / 2, p.y + depth);
+        ctx.closePath();
+        ctx.fill();
+        ctx.fillStyle = mix(palette.side, "#1d3936", .32);
+        ctx.beginPath();
+        ctx.moveTo(p.x + tw / 2, p.y);
+        ctx.lineTo(p.x, p.y + th / 2);
+        ctx.lineTo(p.x, p.y + th / 2 + depth);
+        ctx.lineTo(p.x + tw / 2, p.y + depth);
+        ctx.closePath();
+        ctx.fill();
+        this.diamond(p, tw, th);
+        ctx.fillStyle = mix(top, "#f6e9bd", variation);
+        ctx.fill();
+        ctx.strokeStyle = walkable ? "rgba(255,248,208,.2)" : "rgba(27,66,60,.18)";
+        ctx.lineWidth = Math.max(.6, s);
+        ctx.stroke();
+
+        if (tile === "g" || tile === "p" || tile === "e") {
+          ctx.strokeStyle = "rgba(72,88,53,.16)";
+          ctx.lineWidth = Math.max(.5, s * .7);
+          ctx.beginPath();
+          ctx.moveTo(p.x - tw * .28, p.y + th * .06);
+          ctx.quadraticCurveTo(p.x, p.y + th * .22, p.x + tw * .22, p.y + th * .06);
+          ctx.stroke();
+        }
+        if (tile === "w") {
+          ctx.save();
+          this.diamond(p, tw * .94, th * .9);
+          ctx.clip();
+          ctx.strokeStyle = "rgba(197,238,224,.28)";
+          ctx.lineWidth = Math.max(1, s);
+          for (let wave = -1; wave <= 1; wave += 1) {
+            ctx.beginPath();
+            const yy = p.y + wave * 7 * s + Math.sin(time / 700 + x + y) * s;
+            ctx.moveTo(p.x - tw * .3, yy);
+            ctx.quadraticCurveTo(p.x, yy + 4 * s, p.x + tw * .3, yy);
+            ctx.stroke();
+          }
+          ctx.restore();
+          if (winter > .01) {
+            ctx.save();
+            ctx.globalAlpha = winter;
+            this.diamond(p, tw * (.94 + .02 * winter), th * .92);
+            const ice = ctx.createLinearGradient(p.x - tw / 2, p.y - th / 2, p.x + tw / 2, p.y + th / 2);
+            ice.addColorStop(0, "#e9f7f2");
+            ice.addColorStop(.5, "#bcdde0");
+            ice.addColorStop(1, "#eef8ee");
+            ctx.fillStyle = ice;
+            ctx.fill();
+            ctx.strokeStyle = "rgba(255,255,255,.85)";
+            ctx.lineWidth = 1.4 * s;
+            ctx.stroke();
+            ctx.strokeStyle = "rgba(100,157,171,.45)";
+            ctx.lineWidth = .8 * s;
+            ctx.beginPath();
+            ctx.moveTo(p.x - tw * .17, p.y - th * .19);
+            ctx.lineTo(p.x - tw * .03, p.y + th * .03);
+            ctx.lineTo(p.x + tw * .11, p.y - th * .05);
+            ctx.moveTo(p.x - tw * .03, p.y + th * .03);
+            ctx.lineTo(p.x + tw * .04, p.y + th * .22);
+            ctx.stroke();
+            ctx.restore();
+          }
+        }
+        if (tile === "v") this.drawVines(p, spring, time);
+        if (tile === "p") this.drawPlate(p, Core.platePressed(state, level, { x: x, y: y }), time);
+      }
+      this.regions.push({ type: "tile", x: x, y: y, points: [
+        { x: p.x, y: p.y - th / 2 }, { x: p.x + tw / 2, y: p.y }, { x: p.x, y: p.y + th / 2 }, { x: p.x - tw / 2, y: p.y }
+      ] });
+    }
+
+    drawVines(p, amount, time) {
+      if (amount < .01) return;
+      const ctx = this.ctx, s = this.layout.scale, tw = 72 * s, th = 36 * s;
+      ctx.save();
+      ctx.globalAlpha = amount;
+      this.diamond(p, tw * amount, th * amount);
+      ctx.fillStyle = "rgba(92,139,76,.86)";
+      ctx.fill();
+      ctx.strokeStyle = "#d0dfa0";
+      ctx.lineWidth = 1.3 * s;
+      ctx.stroke();
+      for (let vine = -1; vine <= 1; vine += 1) {
+        ctx.strokeStyle = vine === 0 ? "#527444" : "#6d934f";
+        ctx.lineWidth = (3.2 - Math.abs(vine)) * s;
+        ctx.beginPath();
+        ctx.moveTo(p.x - tw * .43 * amount, p.y + vine * 5 * s);
+        ctx.bezierCurveTo(p.x - tw * .12, p.y - 7 * s + vine * 4 * s, p.x + tw * .12, p.y + 7 * s + vine * 4 * s, p.x + tw * .43 * amount, p.y + vine * 5 * s);
+        ctx.stroke();
+      }
+      for (let leaf = 0; leaf < 7; leaf += 1) {
+        const xx = p.x + (leaf - 3) * 8 * s * amount;
+        const yy = p.y + Math.sin(leaf * 2.2) * 5 * s;
+        ctx.fillStyle = leaf % 3 === 0 ? "#eeb7c1" : "#a8cd79";
+        ctx.beginPath();
+        ctx.ellipse(xx, yy, 3.8 * s * amount, 2.1 * s * amount, leaf, 0, Math.PI * 2);
+        ctx.fill();
+      }
+      ctx.restore();
+    }
+
+    drawPlate(p, pressed, time) {
+      const ctx = this.ctx, s = this.layout.scale;
+      ctx.save();
+      if (pressed) { ctx.shadowColor = "#ffe29a"; ctx.shadowBlur = 15 * s; }
+      ctx.fillStyle = pressed ? "#f3cf78" : "#a58d64";
+      ctx.strokeStyle = "#584f42";
+      ctx.lineWidth = 1.5 * s;
+      ctx.beginPath();
+      ctx.ellipse(p.x, p.y + 1 * s, 14 * s, 7 * s, 0, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.stroke();
+      ctx.shadowBlur = 0;
+      ctx.strokeStyle = pressed ? "#fff2b9" : "#d1bb8c";
+      ctx.beginPath();
+      ctx.ellipse(p.x, p.y, 9 * s, 4.2 * s, 0, 0, Math.PI * 2);
+      ctx.stroke();
+      ctx.restore();
+    }
+
+    visualPosition(id, current, visual, time) {
+      if (!visual || time - visual.start > 190 || this.reducedMotion) return current;
+      const beforeList = id === "player" ? [visual.before.player] : visual.before.objects;
+      const afterList = id === "player" ? [visual.after.player] : visual.after.objects;
+      const before = beforeList.find(function (item) { return id === "player" || item.id === id; });
+      const after = afterList.find(function (item) { return id === "player" || item.id === id; });
+      if (!before || !after) return current;
+      const amount = smooth((time - visual.start) / 180);
+      return { x: lerp(before.x, after.x, amount), y: lerp(before.y, after.y, amount) };
+    }
+
+    drawLevel(model, time, palette) {
+      const game = model.game, level = game.level, state = game.state;
+      this.configureLevelLayout(level);
+      for (let y = 0; y < level.map.length; y += 1) {
+        for (let x = 0; x < level.map[y].length; x += 1) {
+          const tile = level.map[y][x];
+          if (tile !== " ") this.drawFloor(x, y, tile, state, level, time, palette);
+        }
+      }
+      if (model.hover) this.drawHoverPath(model.hover, game, time);
+      const drawables = [];
+      level.map.forEach(function (row, y) {
+        Array.from(row).forEach(function (tile, x) {
+          if (tile === "t") drawables.push({ x: x, y: y, kind: "tree" });
+          if (tile === "d") drawables.push({ x: x, y: y, kind: "door" });
+          if (tile === "e" || (x === level.exit.x && y === level.exit.y)) drawables.push({ x: x, y: y, kind: "exit" });
+          if ((tile === "g" || tile === "b") && hash(x, y, 12) > .68) drawables.push({ x: x, y: y, kind: "plant" });
+        });
+      });
+      Core.activeObjects(state).forEach(function (object) { drawables.push({ x: object.x, y: object.y, kind: object.type, object: object }); });
+      if (!state.seedTaken) drawables.push({ x: level.seed.x, y: level.seed.y, kind: "seed" });
+      drawables.push({ x: state.player.x, y: state.player.y, kind: "player" });
+      drawables.sort(function (a, b) { return (a.x + a.y) - (b.x + b.y) || a.x - b.x; });
+      drawables.forEach((item) => {
+        if (item.kind === "tree") this.drawTree(item.x, item.y, time, palette);
+        else if (item.kind === "door") this.drawDoor(item.x, item.y, game, time, palette);
+        else if (item.kind === "exit") this.drawExit(item.x, item.y, state.seedTaken, time, palette);
+        else if (item.kind === "plant") this.drawSmallPlant(item.x, item.y, time, palette);
+        else if (item.kind === "seed") this.drawSeed(item.x, item.y, time, palette);
+        else if (item.kind === "player") {
+          const position = this.visualPosition("player", state.player, model.visual, time);
+          this.drawPlayer(position.x, position.y, time, palette, model.visual);
+        } else {
+          const position = this.visualPosition(item.object.id, item.object, model.visual, time);
+          if (item.kind === "fruit") this.drawFruit(position.x, position.y, time, palette);
+          else this.drawPlanter(position.x, position.y, time, palette);
+        }
+      });
+    }
+
+    drawHoverPath(hover, game, time) {
+      const ctx = this.ctx, s = this.layout.scale;
+      let state = game.state;
+      const points = [];
+      for (const action of hover.actions) {
+        const result = Core.applyToState(state, game.level, action);
+        if (!result.ok) break;
+        state = result.state;
+        points.push(this.project(state.player.x, state.player.y));
+      }
+      ctx.save();
+      points.forEach(function (point, index) {
+        ctx.globalAlpha = .35 + .4 * (index + 1) / points.length;
+        ctx.fillStyle = "#fff4bd";
+        ctx.beginPath();
+        ctx.ellipse(point.x, point.y + 1 * s, 3.1 * s, 1.8 * s, 0, 0, Math.PI * 2);
+        ctx.fill();
+      });
+      if (points.length) {
+        const last = points[points.length - 1];
+        ctx.globalAlpha = .65 + Math.sin(time / 250) * .12;
+        ctx.strokeStyle = "#fff3b2";
+        ctx.lineWidth = 1.5 * s;
+        ctx.beginPath();
+        ctx.ellipse(last.x, last.y, 12 * s, 6 * s, 0, 0, Math.PI * 2);
+        ctx.stroke();
+      }
+      ctx.restore();
+    }
+
+    drawTree(x, y, time, palette) {
+      const ctx = this.ctx, s = this.layout.scale, p = this.project(x, y);
+      const winter = this.seasonAmount("winter", time), spring = this.seasonAmount("spring", time), summer = this.seasonAmount("summer", time), autumn = this.seasonAmount("autumn", time);
+      ctx.save();
+      ctx.fillStyle = "rgba(27,49,38,.25)";
+      ctx.beginPath(); ctx.ellipse(p.x, p.y + 5 * s, 22 * s, 8 * s, 0, 0, Math.PI * 2); ctx.fill();
+      ctx.strokeStyle = "#634c38";
+      ctx.lineCap = "round";
+      ctx.lineWidth = 7 * s;
+      ctx.beginPath(); ctx.moveTo(p.x, p.y + 2 * s); ctx.lineTo(p.x - 2 * s, p.y - 35 * s); ctx.stroke();
+      ctx.lineWidth = 3 * s;
+      ctx.beginPath(); ctx.moveTo(p.x - 1 * s, p.y - 22 * s); ctx.lineTo(p.x - 18 * s, p.y - 38 * s); ctx.moveTo(p.x, p.y - 28 * s); ctx.lineTo(p.x + 17 * s, p.y - 44 * s); ctx.stroke();
+      const leafColor = autumn > .2 ? "#bd6d43" : (winter > .2 ? "#78938a" : "#5e9460");
+      const clusters = [[-15,-40,18,13],[4,-49,21,16],[19,-38,16,13],[-2,-30,20,13]];
+      clusters.forEach(function (cluster, index) {
+        ctx.fillStyle = mix(leafColor, "#f1b65f", autumn * .22 + index * .025);
+        ctx.beginPath(); ctx.ellipse(p.x + cluster[0] * s, p.y + cluster[1] * s, cluster[2] * s, cluster[3] * s, index * .3, 0, Math.PI * 2); ctx.fill();
+      });
+      if (spring > .02) {
+        ctx.fillStyle = rgba("#f5c0cc", spring);
+        for (let flower = 0; flower < 12; flower += 1) {
+          const xx = p.x + (hash(flower, 1, 5) - .5) * 55 * s;
+          const yy = p.y - (30 + hash(flower, 2, 7) * 32) * s;
+          ctx.beginPath(); ctx.arc(xx, yy, (1.5 + hash(flower, 3, 2)) * s * spring, 0, Math.PI * 2); ctx.fill();
+        }
+      }
+      if (winter > .02) {
+        ctx.strokeStyle = rgba("#eef9f4", winter * .9);
+        ctx.lineWidth = 4 * s;
+        ctx.beginPath(); ctx.arc(p.x + 3 * s, p.y - 48 * s, 20 * s, Math.PI * 1.08, Math.PI * 1.88); ctx.stroke();
+      }
+      if (autumn > .02) {
+        ctx.fillStyle = rgba("#d99045", autumn);
+        [[-14,-33],[7,-40],[18,-30]].forEach(function (pos) { ctx.beginPath(); ctx.arc(p.x + pos[0] * s, p.y + pos[1] * s, 3.2 * s, 0, Math.PI * 2); ctx.fill(); });
+      }
+      ctx.restore();
+    }
+
+    drawSmallPlant(x, y, time, palette) {
+      const s = this.layout.scale, p = this.project(x, y), summer = this.seasonAmount("summer", time), spring = this.seasonAmount("spring", time), winter = this.seasonAmount("winter", time);
+      const ctx = this.ctx;
+      const ox = (hash(x, y, 15) > .5 ? 1 : -1) * 23 * s;
+      const oy = 3 * s;
+      ctx.save();
+      ctx.strokeStyle = winter > .5 ? "#91aaa0" : "#50734b";
+      ctx.lineWidth = 1.4 * s;
+      ctx.beginPath(); ctx.moveTo(p.x + ox, p.y + oy); ctx.quadraticCurveTo(p.x + ox - 2 * s, p.y - 7 * s, p.x + ox + Math.sin(time / 1300 + x) * s, p.y - 12 * s); ctx.stroke();
+      if (summer > .1 || spring > .1) this.drawFlower(p.x + ox, p.y - 11 * s, Math.max(summer, spring * .7), spring > summer ? "#efb0bf" : "#f6c951");
+      else {
+        ctx.fillStyle = winter > .5 ? "#e4f0e8" : "#a47a4e";
+        ctx.beginPath(); ctx.ellipse(p.x + ox, p.y - 11 * s, 2.5 * s, 4 * s, 0, 0, Math.PI * 2); ctx.fill();
+      }
+      ctx.restore();
+    }
+
+    drawFlower(x, y, openness, color) {
+      const ctx = this.ctx, s = this.layout.scale;
+      ctx.save();
+      ctx.fillStyle = color;
+      for (let petal = 0; petal < 7; petal += 1) {
+        const angle = petal / 7 * Math.PI * 2;
+        const distance = 4.5 * s * openness;
+        ctx.beginPath();
+        ctx.ellipse(x + Math.cos(angle) * distance, y + Math.sin(angle) * distance, 3.6 * s * openness, 2.1 * s * openness, angle, 0, Math.PI * 2);
+        ctx.fill();
+      }
+      ctx.fillStyle = "#8e6431";
+      ctx.beginPath(); ctx.arc(x, y, 3 * s, 0, Math.PI * 2); ctx.fill();
+      ctx.restore();
+    }
+
+    drawDoor(x, y, game, time, palette) {
+      const ctx = this.ctx, s = this.layout.scale, p = this.project(x, y), open = Core.doorOpen(game.state, game.level), summer = this.seasonAmount("summer", time);
+      ctx.save();
+      ctx.fillStyle = "rgba(28,45,35,.25)";
+      ctx.beginPath(); ctx.ellipse(p.x, p.y + 5 * s, 25 * s, 7 * s, 0, 0, Math.PI * 2); ctx.fill();
+      if (open) {
+        ctx.shadowColor = "#ffe29a"; ctx.shadowBlur = 22 * s;
+        ctx.fillStyle = "rgba(255,226,137,.35)";
+        ctx.beginPath(); ctx.ellipse(p.x, p.y - 19 * s, 19 * s, 28 * s, 0, 0, Math.PI * 2); ctx.fill();
+        ctx.shadowBlur = 0;
+      }
+      ctx.strokeStyle = open ? "#e5bd64" : "#665b4c";
+      ctx.lineWidth = 5 * s;
+      ctx.lineCap = "round";
+      ctx.beginPath(); ctx.moveTo(p.x - 22 * s, p.y + 2 * s); ctx.lineTo(p.x - 22 * s, p.y - 37 * s); ctx.quadraticCurveTo(p.x, p.y - 64 * s, p.x + 22 * s, p.y - 37 * s); ctx.lineTo(p.x + 22 * s, p.y + 2 * s); ctx.stroke();
+      const panelAlpha = open ? .14 : .94;
+      const lift = open ? 31 * s : 0;
+      ctx.globalAlpha = panelAlpha;
+      ctx.fillStyle = "#476c62";
+      ctx.strokeStyle = "#d0b473";
+      ctx.lineWidth = 1.4 * s;
+      ctx.beginPath(); ctx.moveTo(p.x - 17 * s, p.y - 1 * s - lift); ctx.lineTo(p.x - 17 * s, p.y - 35 * s - lift); ctx.quadraticCurveTo(p.x, p.y - 53 * s - lift, p.x + 17 * s, p.y - 35 * s - lift); ctx.lineTo(p.x + 17 * s, p.y - 1 * s - lift); ctx.closePath(); ctx.fill(); ctx.stroke();
+      for (let bar = -1; bar <= 1; bar += 1) { ctx.beginPath(); ctx.moveTo(p.x + bar * 9 * s, p.y - 4 * s - lift); ctx.lineTo(p.x + bar * 9 * s, p.y - 43 * s - lift); ctx.stroke(); }
+      ctx.globalAlpha = 1;
+      ctx.strokeStyle = "#4f7749"; ctx.lineWidth = 2 * s;
+      ctx.beginPath(); ctx.moveTo(p.x - 29 * s, p.y + 1 * s); ctx.lineTo(p.x - 29 * s, p.y - 19 * s); ctx.stroke();
+      this.drawFlower(p.x - 29 * s, p.y - 22 * s, Math.max(.18, summer), summer > .4 ? "#ffd45f" : "#9d9d67");
+      ctx.restore();
+    }
+
+    drawExit(x, y, active, time, palette) {
+      const ctx = this.ctx, s = this.layout.scale, p = this.project(x, y);
+      ctx.save();
+      if (active) { ctx.shadowColor = "#ffe79b"; ctx.shadowBlur = 20 * s; }
+      ctx.strokeStyle = active ? "#f0d487" : "#6e7f6a";
+      ctx.lineWidth = 4 * s;
+      ctx.beginPath(); ctx.moveTo(p.x - 19 * s, p.y + 3 * s); ctx.lineTo(p.x - 19 * s, p.y - 28 * s); ctx.arc(p.x, p.y - 28 * s, 19 * s, Math.PI, 0); ctx.lineTo(p.x + 19 * s, p.y + 3 * s); ctx.stroke();
+      ctx.shadowBlur = 0;
+      ctx.fillStyle = active ? "rgba(255,231,148,.28)" : "rgba(43,77,66,.2)";
+      ctx.beginPath(); ctx.moveTo(p.x - 14 * s, p.y); ctx.lineTo(p.x - 14 * s, p.y - 27 * s); ctx.arc(p.x, p.y - 27 * s, 14 * s, Math.PI, 0); ctx.lineTo(p.x + 14 * s, p.y); ctx.closePath(); ctx.fill();
+      ctx.fillStyle = active ? "#fff0ac" : "#91a088";
+      ctx.beginPath(); ctx.arc(p.x, p.y - 46 * s, (2.4 + Math.sin(time / 350) * .4) * s, 0, Math.PI * 2); ctx.fill();
+      ctx.restore();
+    }
+
+    drawSeed(x, y, time, palette) {
+      const ctx = this.ctx, s = this.layout.scale, p = this.project(x, y), bob = this.reducedMotion ? 0 : Math.sin(time / 430) * 4 * s;
+      ctx.save();
+      ctx.fillStyle = "rgba(255,234,151,.23)";
+      ctx.beginPath(); ctx.ellipse(p.x, p.y + 2 * s, 19 * s, 8 * s, 0, 0, Math.PI * 2); ctx.fill();
+      ctx.translate(p.x, p.y - 22 * s + bob);
+      if (!this.reducedMotion) ctx.rotate(Math.sin(time / 900) * .15);
+      ctx.shadowColor = "#fff0a5"; ctx.shadowBlur = 24 * s;
+      ctx.fillStyle = "#fff3a9";
+      ctx.beginPath();
+      for (let point = 0; point < 16; point += 1) {
+        const angle = -Math.PI / 2 + point * Math.PI / 8;
+        const radius = (point % 2 ? 4.5 : 11) * s;
+        const xx = Math.cos(angle) * radius, yy = Math.sin(angle) * radius;
+        if (point === 0) ctx.moveTo(xx, yy); else ctx.lineTo(xx, yy);
+      }
+      ctx.closePath(); ctx.fill();
+      ctx.shadowBlur = 0;
+      ctx.fillStyle = "#e5a94b"; ctx.beginPath(); ctx.arc(0, 0, 3.2 * s, 0, Math.PI * 2); ctx.fill();
+      ctx.restore();
+    }
+
+    drawFruit(x, y, time, palette) {
+      const ctx = this.ctx, s = this.layout.scale, p = this.project(x, y);
+      ctx.save();
+      ctx.fillStyle = "rgba(46,46,29,.28)"; ctx.beginPath(); ctx.ellipse(p.x, p.y + 4 * s, 13 * s, 5 * s, 0, 0, Math.PI * 2); ctx.fill();
+      ctx.shadowColor = "rgba(255,211,111,.45)"; ctx.shadowBlur = 8 * s;
+      const gradient = ctx.createRadialGradient(p.x - 4 * s, p.y - 12 * s, 1, p.x, p.y - 6 * s, 15 * s);
+      gradient.addColorStop(0, "#ffd07b"); gradient.addColorStop(.45, "#d88943"); gradient.addColorStop(1, "#9c4f34");
+      ctx.fillStyle = gradient;
+      ctx.beginPath(); ctx.arc(p.x, p.y - 7 * s, 12 * s, 0, Math.PI * 2); ctx.fill();
+      ctx.shadowBlur = 0;
+      ctx.strokeStyle = "rgba(111,57,36,.45)"; ctx.lineWidth = 1 * s;
+      ctx.beginPath(); ctx.arc(p.x, p.y - 7 * s, 8 * s, -1.2, 1.2); ctx.stroke();
+      ctx.strokeStyle = "#5d5435"; ctx.lineWidth = 2 * s; ctx.beginPath(); ctx.moveTo(p.x, p.y - 18 * s); ctx.lineTo(p.x + 2 * s, p.y - 23 * s); ctx.stroke();
+      ctx.fillStyle = "#799654"; ctx.beginPath(); ctx.ellipse(p.x + 6 * s, p.y - 21 * s, 5 * s, 2.5 * s, -.4, 0, Math.PI * 2); ctx.fill();
+      ctx.restore();
+    }
+
+    drawPlanter(x, y, time, palette) {
+      const ctx = this.ctx, s = this.layout.scale, p = this.project(x, y), summer = this.seasonAmount("summer", time), spring = this.seasonAmount("spring", time);
+      ctx.save();
+      ctx.fillStyle = "rgba(40,47,31,.25)"; ctx.beginPath(); ctx.ellipse(p.x, p.y + 4 * s, 20 * s, 6 * s, 0, 0, Math.PI * 2); ctx.fill();
+      ctx.fillStyle = "#a85f43";
+      ctx.beginPath(); ctx.moveTo(p.x - 18 * s, p.y - 12 * s); ctx.lineTo(p.x + 18 * s, p.y - 12 * s); ctx.lineTo(p.x + 13 * s, p.y + 4 * s); ctx.lineTo(p.x - 13 * s, p.y + 4 * s); ctx.closePath(); ctx.fill();
+      ctx.fillStyle = "#d58d62"; ctx.beginPath(); ctx.ellipse(p.x, p.y - 12 * s, 18 * s, 6 * s, 0, 0, Math.PI * 2); ctx.fill();
+      ctx.fillStyle = "#554c36"; ctx.beginPath(); ctx.ellipse(p.x, p.y - 12 * s, 14 * s, 3.7 * s, 0, 0, Math.PI * 2); ctx.fill();
+      ctx.strokeStyle = "#edd0a1"; ctx.lineWidth = 1.5 * s;
+      ctx.beginPath(); ctx.moveTo(p.x - 9 * s, p.y - 3 * s); ctx.lineTo(p.x + 9 * s, p.y - 3 * s); ctx.moveTo(p.x - 6 * s, p.y - 6 * s); ctx.lineTo(p.x - 9 * s, p.y - 3 * s); ctx.lineTo(p.x - 6 * s, p.y); ctx.moveTo(p.x + 6 * s, p.y - 6 * s); ctx.lineTo(p.x + 9 * s, p.y - 3 * s); ctx.lineTo(p.x + 6 * s, p.y); ctx.stroke();
+      for (let stem = -1; stem <= 1; stem += 1) {
+        ctx.strokeStyle = "#4f784a"; ctx.lineWidth = 1.6 * s;
+        ctx.beginPath(); ctx.moveTo(p.x + stem * 7 * s, p.y - 13 * s); ctx.quadraticCurveTo(p.x + stem * 8 * s, p.y - 24 * s, p.x + stem * 10 * s + Math.sin(time / 800 + stem) * s, p.y - 30 * s); ctx.stroke();
+        this.drawFlower(p.x + stem * 10 * s, p.y - 30 * s, Math.max(.2, summer + spring * .6), stem === 0 ? "#f1b0c0" : "#f4ce6b");
+      }
+      ctx.restore();
+    }
+
+    drawPlayer(x, y, time, palette, visual) {
+      const ctx = this.ctx, s = this.layout.scale, p = this.project(x, y);
+      const moving = visual && time - visual.start < 190 && (visual.before.player.x !== visual.after.player.x || visual.before.player.y !== visual.after.player.y);
+      const bob = this.reducedMotion ? 0 : Math.sin(time / (moving ? 90 : 500)) * (moving ? 2 : .8) * s;
+      const dx = visual ? visual.after.player.x - visual.before.player.x : 1;
+      const dy = visual ? visual.after.player.y - visual.before.player.y : 0;
+      const facing = dx - dy >= 0 ? 1 : -1;
+      ctx.save();
+      ctx.translate(p.x, p.y + bob);
+      ctx.scale(facing, 1);
+      ctx.fillStyle = "rgba(29,46,37,.3)"; ctx.beginPath(); ctx.ellipse(0, 4 * s, 13 * s, 5 * s, 0, 0, Math.PI * 2); ctx.fill();
+      ctx.strokeStyle = "#4b4d42"; ctx.lineWidth = 3 * s; ctx.lineCap = "round";
+      const step = moving && !this.reducedMotion ? Math.sin(time / 80) * 3 * s : 0;
+      ctx.beginPath(); ctx.moveTo(-6 * s, -5 * s); ctx.lineTo(-7 * s + step, 2 * s); ctx.moveTo(6 * s, -5 * s); ctx.lineTo(7 * s - step, 2 * s); ctx.stroke();
+      ctx.strokeStyle = "#aa814b"; ctx.lineWidth = 3 * s;
+      ctx.beginPath(); ctx.moveTo(-11 * s, -20 * s); ctx.lineTo(-16 * s, -12 * s + step); ctx.moveTo(11 * s, -20 * s); ctx.lineTo(15 * s, -14 * s - step); ctx.stroke();
+      const body = ctx.createLinearGradient(-10 * s, -25 * s, 12 * s, -4 * s);
+      body.addColorStop(0, "#e0b86f"); body.addColorStop(.55, "#ad814d"); body.addColorStop(1, "#725a3d");
+      ctx.fillStyle = body;
+      ctx.beginPath(); ctx.ellipse(0, -15 * s, 12 * s, 14 * s, 0, 0, Math.PI * 2); ctx.fill();
+      ctx.strokeStyle = "#5b533f"; ctx.lineWidth = 1.2 * s; ctx.stroke();
+      ctx.fillStyle = "#42685f"; ctx.beginPath(); ctx.ellipse(3 * s, -14 * s, 5 * s, 6 * s, 0, 0, Math.PI * 2); ctx.fill();
+      ctx.fillStyle = "#cfe6bc"; ctx.beginPath(); ctx.arc(4 * s, -16 * s, 1.5 * s, 0, Math.PI * 2); ctx.fill();
+      ctx.strokeStyle = "#716044"; ctx.lineWidth = 2 * s;
+      ctx.beginPath(); ctx.moveTo(-12 * s, -19 * s); ctx.lineTo(-19 * s, -19 * s); ctx.moveTo(-19 * s, -24 * s); ctx.lineTo(-19 * s, -14 * s); ctx.moveTo(-22 * s, -24 * s); ctx.lineTo(-16 * s, -24 * s); ctx.moveTo(-22 * s, -14 * s); ctx.lineTo(-16 * s, -14 * s); ctx.stroke();
+      ctx.fillStyle = "rgba(205,239,218,.76)";
+      ctx.beginPath(); ctx.arc(0, -31 * s, 13 * s, Math.PI, 0); ctx.lineTo(13 * s, -28 * s); ctx.quadraticCurveTo(0, -21 * s, -13 * s, -28 * s); ctx.closePath(); ctx.fill();
+      ctx.strokeStyle = "#776748"; ctx.lineWidth = 2 * s; ctx.stroke();
+      ctx.fillStyle = "#35544c"; ctx.beginPath(); ctx.ellipse(0, -28 * s, 10 * s, 6 * s, 0, 0, Math.PI * 2); ctx.fill();
+      ctx.fillStyle = "#f5e69b"; ctx.shadowColor = "#fff0a5"; ctx.shadowBlur = 6 * s;
+      ctx.beginPath(); ctx.arc(4 * s, -29 * s, 1.8 * s, 0, Math.PI * 2); ctx.arc(-3 * s, -29 * s, 1.8 * s, 0, Math.PI * 2); ctx.fill();
+      ctx.shadowBlur = 0;
+      ctx.strokeStyle = "#527449"; ctx.lineWidth = 1.5 * s; ctx.beginPath(); ctx.moveTo(0, -43 * s); ctx.quadraticCurveTo(1 * s, -49 * s, 5 * s, -50 * s); ctx.stroke();
+      ctx.fillStyle = "#a8cc78"; ctx.beginPath(); ctx.ellipse(7 * s, -50 * s, 5 * s, 2.5 * s, -.4, 0, Math.PI * 2); ctx.fill();
+      ctx.restore();
+    }
+
+    drawHub(model, time, palette) {
+      this.configureHubLayout();
+      const ctx = this.ctx, s = this.layout.scale;
+      const springState = { season: "spring", objects: [], player: { x: -10, y: -10 }, seedTaken: false, completed: false };
+      const hubLevel = { map: [] };
+      for (let y = 0; y < 9; y += 1) {
+        hubLevel.map[y] = "";
+        for (let x = 0; x < 9; x += 1) {
+          const dx = x - 4, dy = y - 4;
+          const ground = dx * dx + dy * dy <= 20;
+          hubLevel.map[y] += ground ? "g" : " ";
+          if (ground) this.drawFloor(x, y, "g", springState, hubLevel, time, palette);
+        }
+      }
+      this.regions = [];
+      const plotPositions = [[2,2],[4,1],[6,2],[7,4],[5,6],[3,6],[1,4]];
+      const items = [];
+      plotPositions.slice(0, this.levels.length).forEach(function (position, index) { items.push({ x: position[0], y: position[1], kind: "plot", index: index }); });
+      items.push({ x: 4, y: 4, kind: "greenhouse" }, { x: 4, y: 6, kind: "gardener" });
+      items.sort(function (a, b) { return a.x + a.y - b.x - b.y; });
+      items.forEach((item) => {
+        if (item.kind === "plot") this.drawHubPlot(item.x, item.y, item.index, model, time, palette);
+        else if (item.kind === "greenhouse") this.drawGreenhouse(4, 4, model.completed.length, time, palette);
+        else this.drawPlayer(4.7, 5.8, time, palette, null);
+      });
+      ctx.save();
+      ctx.fillStyle = "rgba(255,244,196,.7)";
+      ctx.font = (10 * s) + "px Trebuchet MS";
+      ctx.textAlign = "center";
+      ctx.fillText(saveText(model.completed.length, this.levels.length), this.width / 2, this.height - 22);
+      ctx.restore();
+      function saveText(done, total) { return done === total && total > 0 ? "✦  " + done + " / " + total + "  ✦" : done + " / " + total; }
+    }
+
+    drawHubPlot(x, y, index, model, time, palette) {
+      const ctx = this.ctx, s = this.layout.scale, p = this.project(x, y), restored = model.completed.includes(this.levels[index].id), selected = model.selected === index;
+      ctx.save();
+      if (selected) {
+        ctx.strokeStyle = "#ffe4a0"; ctx.lineWidth = 2 * s; ctx.globalAlpha = .65 + Math.sin(time / 300) * .2;
+        ctx.beginPath(); ctx.ellipse(p.x, p.y - 5 * s, 38 * s, 21 * s, 0, 0, Math.PI * 2); ctx.stroke(); ctx.globalAlpha = 1;
+      }
+      this.diamond(p, 61 * s, 30 * s);
+      ctx.fillStyle = restored ? "#87a967" : "#6d7560"; ctx.fill();
+      ctx.strokeStyle = restored ? "#d8d99a" : "#94937a"; ctx.lineWidth = 1.5 * s; ctx.stroke();
+      if (restored) {
+        for (let flower = 0; flower < 5; flower += 1) {
+          const xx = p.x + (flower - 2) * 8 * s, yy = p.y - (5 + (flower % 2) * 5) * s;
+          ctx.strokeStyle = "#4e7548"; ctx.lineWidth = 1.2 * s; ctx.beginPath(); ctx.moveTo(xx, p.y + 3 * s); ctx.lineTo(xx, yy); ctx.stroke();
+          this.drawFlower(xx, yy, .65, flower % 2 ? "#f3b5c3" : "#f4d16c");
+        }
+        this.drawLantern(p.x + 24 * s, p.y - 8 * s, true, time);
+      } else {
+        ctx.strokeStyle = "#4d594c"; ctx.lineWidth = 2 * s;
+        ctx.beginPath(); ctx.moveTo(p.x - 15 * s, p.y); ctx.lineTo(p.x - 5 * s, p.y - 9 * s); ctx.lineTo(p.x + 5 * s, p.y - 2 * s); ctx.moveTo(p.x + 7 * s, p.y - 13 * s); ctx.lineTo(p.x + 16 * s, p.y - 5 * s); ctx.stroke();
+        ctx.fillStyle = "#9a967a"; ctx.beginPath(); ctx.arc(p.x - 8 * s, p.y - 8 * s, 3 * s, 0, Math.PI * 2); ctx.fill();
+      }
+      ctx.fillStyle = restored ? "#ffe69a" : "#e3d9b6";
+      ctx.font = "bold " + (12 * s) + "px Georgia";
+      ctx.textAlign = "center";
+      ctx.fillText(restored ? "✦" : String(index + 1), p.x, p.y - 24 * s);
+      ctx.restore();
+      this.regions.push({ type: "hubLevel", index: index, circle: { x: p.x, y: p.y - 8 * s, r: 42 * s } });
+    }
+
+    drawLantern(x, y, lit, time) {
+      const ctx = this.ctx, s = this.layout.scale;
+      ctx.save();
+      ctx.strokeStyle = "#4c5544"; ctx.lineWidth = 2 * s; ctx.beginPath(); ctx.moveTo(x, y); ctx.lineTo(x, y - 25 * s); ctx.stroke();
+      if (lit) { ctx.shadowColor = "#ffe092"; ctx.shadowBlur = 15 * s; }
+      ctx.fillStyle = lit ? "#ffe49a" : "#718073";
+      ctx.beginPath(); ctx.moveTo(x - 5 * s, y - 29 * s); ctx.lineTo(x + 5 * s, y - 29 * s); ctx.lineTo(x + 4 * s, y - 19 * s); ctx.lineTo(x - 4 * s, y - 19 * s); ctx.closePath(); ctx.fill();
+      ctx.shadowBlur = 0; ctx.strokeStyle = "#796745"; ctx.lineWidth = 1.2 * s; ctx.stroke();
+      ctx.restore();
+    }
+
+    drawGreenhouse(x, y, restored, time, palette) {
+      const ctx = this.ctx, s = this.layout.scale, p = this.project(x, y), total = this.levels.length;
+      const w = 112 * s, h = 92 * s;
+      ctx.save();
+      ctx.fillStyle = "rgba(30,51,40,.25)"; ctx.beginPath(); ctx.ellipse(p.x, p.y + 7 * s, w * .62, 18 * s, 0, 0, Math.PI * 2); ctx.fill();
+      if (restored) { ctx.shadowColor = "#ffe4a0"; ctx.shadowBlur = (10 + restored * 2) * s; }
+      ctx.fillStyle = restored ? "rgba(255,225,145," + (.1 + restored / total * .18) + ")" : "rgba(50,77,65,.28)";
+      ctx.beginPath(); ctx.moveTo(p.x - w / 2, p.y); ctx.lineTo(p.x - w / 2, p.y - h * .48); ctx.arc(p.x, p.y - h * .48, w / 2, Math.PI, 0); ctx.lineTo(p.x + w / 2, p.y); ctx.closePath(); ctx.fill();
+      ctx.shadowBlur = 0;
+      ctx.strokeStyle = restored === total ? "#e2bc6f" : "#8c8766"; ctx.lineWidth = 2.4 * s;
+      ctx.beginPath(); ctx.moveTo(p.x - w / 2, p.y); ctx.lineTo(p.x - w / 2, p.y - h * .48); ctx.arc(p.x, p.y - h * .48, w / 2, Math.PI, 0); ctx.lineTo(p.x + w / 2, p.y); ctx.closePath(); ctx.stroke();
+      for (let rib = -2; rib <= 2; rib += 1) {
+        const xx = p.x + rib * w / 5;
+        ctx.beginPath(); ctx.moveTo(xx, p.y); ctx.lineTo(xx, p.y - h * (.65 + (2 - Math.abs(rib)) * .12)); ctx.stroke();
+      }
+      ctx.beginPath(); ctx.moveTo(p.x - w / 2, p.y - h * .48); ctx.lineTo(p.x + w / 2, p.y - h * .48); ctx.stroke();
+      ctx.fillStyle = "#315f50"; ctx.beginPath(); ctx.moveTo(p.x - 14 * s, p.y); ctx.lineTo(p.x - 14 * s, p.y - 37 * s); ctx.quadraticCurveTo(p.x, p.y - 50 * s, p.x + 14 * s, p.y - 37 * s); ctx.lineTo(p.x + 14 * s, p.y); ctx.closePath(); ctx.fill();
+      ctx.strokeStyle = "#c3a76a"; ctx.stroke();
+      for (let seed = 0; seed < restored; seed += 1) {
+        const angle = Math.PI + (seed + 1) / (total + 1) * Math.PI;
+        const xx = p.x + Math.cos(angle) * w * .43, yy = p.y - h * .48 + Math.sin(angle) * w * .43;
+        ctx.fillStyle = "#ffe69a"; ctx.shadowColor = "#ffe69a"; ctx.shadowBlur = 10 * s;
+        ctx.beginPath(); ctx.arc(xx, yy, 2.8 * s, 0, Math.PI * 2); ctx.fill();
+      }
+      ctx.shadowBlur = 0;
+      if (restored < total) {
+        ctx.strokeStyle = "rgba(225,222,178,.55)"; ctx.lineWidth = 1.2 * s;
+        ctx.beginPath(); ctx.moveTo(p.x - 37 * s, p.y - 54 * s); ctx.lineTo(p.x - 24 * s, p.y - 41 * s); ctx.lineTo(p.x - 34 * s, p.y - 27 * s); ctx.moveTo(p.x + 30 * s, p.y - 65 * s); ctx.lineTo(p.x + 20 * s, p.y - 47 * s); ctx.stroke();
+      }
+      ctx.restore();
+    }
+
+    drawWeather(time, season, celebration) {
+      if (this.reducedMotion) return;
+      const ctx = this.ctx, w = this.width, h = this.height;
+      ctx.save();
+      this.particles.forEach(function (particle, index) {
+        const cycle = (particle.y + time / 1000 * particle.speed * .045) % 1.15;
+        const x = (particle.x * w + Math.sin(time / 1500 + index) * 22 * particle.drift + w) % w;
+        const y = cycle * h - 30;
+        if (season === "winter") {
+          ctx.fillStyle = "rgba(244,252,247,.65)";
+          ctx.beginPath(); ctx.arc(x, y, particle.size * .7, 0, Math.PI * 2); ctx.fill();
+        } else if (season === "autumn") {
+          ctx.fillStyle = index % 2 ? "rgba(218,133,69,.6)" : "rgba(238,181,82,.55)";
+          ctx.save(); ctx.translate(x, y); ctx.rotate(time / 700 + index); ctx.beginPath(); ctx.ellipse(0, 0, particle.size * 1.6, particle.size * .8, 0, 0, Math.PI * 2); ctx.fill(); ctx.restore();
+        } else if (season === "spring" || celebration) {
+          ctx.fillStyle = index % 3 ? "rgba(246,196,204,.5)" : "rgba(255,237,162,.55)";
+          ctx.save(); ctx.translate(x, y); ctx.rotate(time / 1100 + index); ctx.beginPath(); ctx.ellipse(0, 0, particle.size * 1.3, particle.size * .65, 0, 0, Math.PI * 2); ctx.fill(); ctx.restore();
+        } else {
+          ctx.fillStyle = "rgba(255,235,154,.38)";
+          ctx.beginPath(); ctx.arc(x, y, particle.size * .45, 0, Math.PI * 2); ctx.fill();
+        }
+      });
+      ctx.restore();
+    }
+
+    pick(x, y) {
+      for (let index = this.regions.length - 1; index >= 0; index -= 1) {
+        const region = this.regions[index];
+        if (region.circle) {
+          const dx = x - region.circle.x, dy = y - region.circle.y;
+          if (dx * dx + dy * dy <= region.circle.r * region.circle.r) return region;
+        } else if (region.points && pointInPolygon(x, y, region.points)) return region;
+      }
+      return null;
+    }
+  }
+
+  function pointInPolygon(x, y, points) {
+    let inside = false;
+    for (let i = 0, j = points.length - 1; i < points.length; j = i, i += 1) {
+      const xi = points[i].x, yi = points[i].y, xj = points[j].x, yj = points[j].y;
+      const intersect = ((yi > y) !== (yj > y)) && (x < (xj - xi) * (y - yi) / (yj - yi) + xi);
+      if (intersect) inside = !inside;
+    }
+    return inside;
+  }
+
+  root.ConservatoryRenderer = ConservatoryRenderer;
+})(typeof globalThis !== "undefined" ? globalThis : this);
+</script>
+  <script>(function () {
+  "use strict";
+
+  const Core = window.ConservatoryCore;
+  const LEVELS = window.CONSERVATORY_LEVELS;
+  const SAVE_KEY = "conservatoire-saisons-save-v1";
+  const $ = function (id) { return document.getElementById(id); };
+
+  const TEXT = {
+    en: {
+      title: "The Conservatory of Seasons", byline: "A little gardener. Four seasons. Seven gardens.", sound: "Sound", soundOff: "Toggle sound", help: "How to play", conservatory: "Conservatory", clickTip: "Click a lit tile to walk there", winter: "Winter", spring: "Spring", summer: "Summer", autumn: "Autumn", restoration: "Restoration", hubIntro: "Seven sleeping gardens wait above the clouds. Bring back their light seeds.", enterGarden: "Enter garden", resumeGarden: "Resume garden", objective: "Objective", seedObjective: "Find the light seed, then reach the arch.", seedWaiting: "Seed waiting", seedFound: "Light seed found", undo: "Undo", reset: "Reset", hintTitle: "A gentle nudge", hintPrompt: "Observe first. Three hints are here if you need them.", revealHint: "Reveal the next hint", ruleIce: "Ice carries you and objects.", ruleVine: "Vines bridge the open gaps.", ruleSun: "Sunflowers power every plate-fed door.", ruleFruit: "Fallen fruit stays where you push it.", saveNote: "Your restoration is saved on this device.", moveControls: "Arrows / WASD / ZQSD to move", seasonControls: "1–4 to change season", undoControls: "Z to undo", gardenerManual: "THE GARDENER’S LITTLE MANUAL", helpTitle: "Let the garden change.", helpIntro: "Explore at your own pace. Nothing here needs quick reflexes.", winterHelp: "Basins freeze into solid paths.", springHelp: "Lianas grow over pale open gaps.", summerHelp: "Sunflowers open doors when every round plate is weighed down.", autumnHelp: "Trees release heavy fruit. Fruit and planters keep their positions in every season.", safetyHelp: "A season that would strand the gardener or an object is refused. Undo any move or season, or reset the garden without losing restored gardens.", move: "Move", seasons: "Seasons", hint: "Hint", backGarden: "Back to the garden", gardenRestored: "GARDEN RESTORED", restoredCopy: "A light seed returns to the conservatory. Somewhere, an old flower wakes.", returnConservatory: "Return to the conservatory", replayGarden: "Replay this garden", restorationComplete: "THE RESTORATION IS COMPLETE", conclusionTitle: "The conservatory breathes again.", conclusionCopy: "Seven lights glow beneath the glass. The little gardener’s work will keep growing, season after season.", wander: "Wander through the restored gardens", central: "CENTRAL CONSERVATORY", garden: "GARDEN", finalGarden: "FINAL GARDEN", moves: "moves", locked: "Restore the previous garden to open this path.", restored: "Restored", newGarden: "A sleeping garden", finalSubtitle: "Every season has a part to play.", unsafePlayer: "That change would leave you without solid ground.", unsafeObject: "An object would be left unsupported. Move it to firm ground first.", fruitPlayer: "Step away from the fruit’s falling place.", fruitObject: "The fruit needs room to fall.", fruitTerrain: "The fruit needs firm ground beneath its fall.", blocked: "That path is closed in this season.", blockedObject: "The object needs a clear, supported tile ahead.", sameSeason: "This season is already here.", emptyHistory: "Nothing to undo yet.", noPath: "No clear path in this season. Try changing the garden.", resetDone: "The garden is back to its beginning.", completed: "This garden is already restored.", unknownAction: "That action is not available.", winterArrival: "Winter — the basins turn to ice.", springArrival: "Spring — lianas reach across the gaps.", summerArrival: "Summer — sunflowers wake the mechanisms.", autumnArrival: "Autumn — heavy fruit falls from the trees.", undoDone: "One action rewound.", soundEnabled: "Soft sound on", soundDisabled: "Sound off", seedChime: "A light seed joins your satchel.", exitWaiting: "The arch needs the light seed first."
+    },
+    fr: {
+      title: "Le Conservatoire des Saisons", byline: "Un petit gardien. Quatre saisons. Sept jardins.", sound: "Son", soundOff: "Activer ou couper le son", help: "Comment jouer", conservatory: "Conservatoire", clickTip: "Clique sur une case éclairée pour t’y rendre", winter: "Hiver", spring: "Printemps", summer: "Été", autumn: "Automne", restoration: "Restauration", hubIntro: "Sept jardins endormis flottent au-dessus des nuages. Rapporte leurs graines lumineuses.", enterGarden: "Entrer dans le jardin", resumeGarden: "Reprendre le jardin", objective: "Objectif", seedObjective: "Trouve la graine lumineuse, puis rejoins l’arche.", seedWaiting: "Graine à trouver", seedFound: "Graine lumineuse trouvée", undo: "Annuler", reset: "Réinitialiser", hintTitle: "Un petit coup de pouce", hintPrompt: "Observe d’abord. Trois indices sont là si tu en as besoin.", revealHint: "Révéler l’indice suivant", ruleIce: "La glace porte le gardien et les objets.", ruleVine: "Les lianes franchissent les vides.", ruleSun: "Les fleurs solaires alimentent les portes liées aux plaques.", ruleFruit: "Les fruits tombés restent où tu les pousses.", saveNote: "Ta restauration est sauvegardée sur cet appareil.", moveControls: "Flèches / WASD / ZQSD pour se déplacer", seasonControls: "1–4 pour changer de saison", undoControls: "Z pour annuler", gardenerManual: "LE PETIT MANUEL DU JARDINIER", helpTitle: "Laisse le jardin changer.", helpIntro: "Explore à ton rythme. Aucun réflexe rapide n’est nécessaire.", winterHelp: "Les bassins gèlent et deviennent praticables.", springHelp: "Les lianes poussent au-dessus des vides pâles.", summerHelp: "Les fleurs solaires ouvrent les portes lorsque toutes les plaques rondes sont lestées.", autumnHelp: "Les arbres libèrent des fruits lourds. Fruits et jardinières conservent leur position en toute saison.", safetyHelp: "Une saison qui laisserait le gardien ou un objet sans support est refusée. Annule tout déplacement ou changement de saison, ou réinitialise le jardin sans perdre les restaurations.", move: "Déplacement", seasons: "Saisons", hint: "Indice", backGarden: "Retour au jardin", gardenRestored: "JARDIN RESTAURÉ", restoredCopy: "Une graine lumineuse revient au conservatoire. Quelque part, une vieille fleur s’éveille.", returnConservatory: "Retour au conservatoire", replayGarden: "Rejouer ce jardin", restorationComplete: "LA RESTAURATION EST TERMINÉE", conclusionTitle: "Le conservatoire respire à nouveau.", conclusionCopy: "Sept lumières brillent sous la verrière. Le travail du petit gardien continuera de pousser, saison après saison.", wander: "Flâner dans les jardins restaurés", central: "CONSERVATOIRE CENTRAL", garden: "JARDIN", finalGarden: "JARDIN FINAL", moves: "coups", locked: "Restaure le jardin précédent pour ouvrir ce passage.", restored: "Restauré", newGarden: "Un jardin endormi", finalSubtitle: "Chaque saison a un rôle à jouer.", unsafePlayer: "Ce changement te laisserait sans sol solide.", unsafeObject: "Un objet resterait sans support. Déplace-le d’abord sur un sol ferme.", fruitPlayer: "Écarte-toi de la zone de chute du fruit.", fruitObject: "Le fruit a besoin d’espace pour tomber.", fruitTerrain: "Le fruit a besoin d’un sol ferme sous sa chute.", blocked: "Ce passage est fermé en cette saison.", blockedObject: "L’objet a besoin d’une case libre et solide devant lui.", sameSeason: "Cette saison est déjà là.", emptyHistory: "Rien à annuler pour le moment.", noPath: "Aucun chemin libre en cette saison. Essaie de transformer le jardin.", resetDone: "Le jardin a retrouvé son état initial.", completed: "Ce jardin est déjà restauré.", unknownAction: "Cette action n’est pas disponible.", winterArrival: "Hiver — les bassins se changent en glace.", springArrival: "Printemps — les lianes s’élancent au-dessus des vides.", summerArrival: "Été — les fleurs solaires réveillent les mécanismes.", autumnArrival: "Automne — les fruits lourds tombent des arbres.", undoDone: "Une action annulée.", soundEnabled: "Son doux activé", soundDisabled: "Son coupé", seedChime: "Une graine lumineuse rejoint ta besace.", exitWaiting: "L’arche attend d’abord la graine lumineuse."
+    },
+    es: {
+      title: "El Conservatorio de las Estaciones", byline: "Un pequeño jardinero. Cuatro estaciones. Siete jardines.", sound: "Sonido", soundOff: "Activar o silenciar el sonido", help: "Cómo jugar", conservatory: "Conservatorio", clickTip: "Haz clic en una casilla iluminada para caminar", winter: "Invierno", spring: "Primavera", summer: "Verano", autumn: "Otoño", restoration: "Restauración", hubIntro: "Siete jardines dormidos esperan sobre las nubes. Recupera sus semillas de luz.", enterGarden: "Entrar al jardín", resumeGarden: "Continuar el jardín", objective: "Objetivo", seedObjective: "Encuentra la semilla de luz y llega al arco.", seedWaiting: "Semilla pendiente", seedFound: "Semilla de luz encontrada", undo: "Deshacer", reset: "Reiniciar", hintTitle: "Una pequeña ayuda", hintPrompt: "Observa primero. Tienes tres pistas si las necesitas.", revealHint: "Mostrar la siguiente pista", ruleIce: "El hielo sostiene al jardinero y los objetos.", ruleVine: "Las lianas cruzan los huecos.", ruleSun: "Las flores solares activan las puertas conectadas a placas.", ruleFruit: "Los frutos caídos quedan donde los empujas.", saveNote: "Tu restauración se guarda en este dispositivo.", moveControls: "Flechas / WASD / ZQSD para moverte", seasonControls: "1–4 para cambiar de estación", undoControls: "Z para deshacer", gardenerManual: "EL PEQUEÑO MANUAL DEL JARDINERO", helpTitle: "Deja que el jardín cambie.", helpIntro: "Explora a tu ritmo. No necesitas reflejos rápidos.", winterHelp: "Los estanques se congelan y se pueden cruzar.", springHelp: "Las lianas crecen sobre los huecos pálidos.", summerHelp: "Las flores solares abren puertas cuando todas las placas redondas tienen peso.", autumnHelp: "Los árboles sueltan frutos pesados. Frutos y jardineras conservan su posición en todas las estaciones.", safetyHelp: "Se rechaza una estación que deje al jardinero o a un objeto sin apoyo. Deshaz movimientos y estaciones, o reinicia el jardín sin perder restauraciones.", move: "Movimiento", seasons: "Estaciones", hint: "Pista", backGarden: "Volver al jardín", gardenRestored: "JARDÍN RESTAURADO", restoredCopy: "Una semilla de luz vuelve al conservatorio. En algún lugar, una vieja flor despierta.", returnConservatory: "Volver al conservatorio", replayGarden: "Repetir este jardín", restorationComplete: "LA RESTAURACIÓN ESTÁ COMPLETA", conclusionTitle: "El conservatorio vuelve a respirar.", conclusionCopy: "Siete luces brillan bajo el cristal. El trabajo del pequeño jardinero seguirá creciendo, estación tras estación.", wander: "Pasear por los jardines restaurados", central: "CONSERVATORIO CENTRAL", garden: "JARDÍN", finalGarden: "JARDÍN FINAL", moves: "jugadas", locked: "Restaura el jardín anterior para abrir este camino.", restored: "Restaurado", newGarden: "Un jardín dormido", finalSubtitle: "Cada estación tiene un papel.", unsafePlayer: "Ese cambio te dejaría sin suelo firme.", unsafeObject: "Un objeto quedaría sin apoyo. Muévelo primero a suelo firme.", fruitPlayer: "Apártate del lugar donde cae el fruto.", fruitObject: "El fruto necesita espacio para caer.", fruitTerrain: "El fruto necesita suelo firme bajo su caída.", blocked: "Ese camino está cerrado en esta estación.", blockedObject: "El objeto necesita una casilla libre y firme delante.", sameSeason: "Ya estás en esta estación.", emptyHistory: "Aún no hay nada que deshacer.", noPath: "No hay camino libre en esta estación. Prueba a transformar el jardín.", resetDone: "El jardín ha vuelto al principio.", completed: "Este jardín ya está restaurado.", unknownAction: "Esa acción no está disponible.", winterArrival: "Invierno — los estanques se convierten en hielo.", springArrival: "Primavera — las lianas cruzan los huecos.", summerArrival: "Verano — las flores solares despiertan los mecanismos.", autumnArrival: "Otoño — los frutos pesados caen de los árboles.", undoDone: "Acción deshecha.", soundEnabled: "Sonido suave activado", soundDisabled: "Sonido silenciado", seedChime: "Una semilla de luz entra en tu bolsa.", exitWaiting: "El arco necesita primero la semilla de luz."
+    }
+  };
+
+  function defaultSave() {
+    return { version: 1, language: "en", sound: true, completed: [], active: null, selected: 0, conclusionSeen: false };
+  }
+
+  function loadSave() {
+    try {
+      const value = JSON.parse(localStorage.getItem(SAVE_KEY));
+      if (!value || value.version !== 1) return defaultSave();
+      const clean = Object.assign(defaultSave(), value);
+      clean.completed = Array.isArray(value.completed) ? value.completed.filter(function (id) {
+        return LEVELS.some(function (level) { return level.id === id; });
+      }) : [];
+      if (!TEXT[clean.language]) clean.language = "en";
+      return clean;
+    } catch (error) {
+      return defaultSave();
+    }
+  }
+
+  let save = loadSave();
+  let language = save.language;
+  let mode = "hub";
+  let selected = Math.max(0, Math.min(LEVELS.length - 1, Number(save.selected) || 0));
+  let game = null;
+  let hintStage = 0;
+  let pathQueue = [];
+  let pathTimer = null;
+  let toastTimer = null;
+  let seasonToastTimer = null;
+  let hoverInfo = null;
+  let lastVisual = null;
+  let completionTimer = null;
+
+  function t(key) {
+    return (TEXT[language] && TEXT[language][key]) || TEXT.en[key] || key;
+  }
+
+  function persist() {
+    save.language = language;
+    save.selected = selected;
+    try { localStorage.setItem(SAVE_KEY, JSON.stringify(save)); } catch (error) { /* storage is optional */ }
+  }
+
+  function isComplete(index) {
+    return save.completed.includes(LEVELS[index].id);
+  }
+
+  function isUnlocked(index) {
+    return index === 0 || isComplete(index - 1);
+  }
+
+  function firstUnresolved() {
+    const index = LEVELS.findIndex(function (level) { return !save.completed.includes(level.id); });
+    return index < 0 ? 0 : index;
+  }
+
+  function roman(number) {
+    return ["I", "II", "III", "IV", "V", "VI", "VII"][number - 1] || String(number);
+  }
+
+  function localized(level, field) {
+    return (level[field] && (level[field][language] || level[field].en)) || "";
+  }
+
+  class GentleAudio {
+    constructor() { this.context = null; this.enabled = save.sound !== false; }
+    ensure() {
+      if (!this.enabled) return null;
+      if (!this.context) {
+        const AudioContext = window.AudioContext || window.webkitAudioContext;
+        if (!AudioContext) return null;
+        this.context = new AudioContext();
+      }
+      if (this.context.state === "suspended") this.context.resume().catch(function () {});
+      return this.context;
+    }
+    tone(frequency, delay, duration, type, volume) {
+      const context = this.ensure();
+      if (!context) return;
+      const oscillator = context.createOscillator();
+      const gain = context.createGain();
+      const start = context.currentTime + (delay || 0);
+      oscillator.type = type || "sine";
+      oscillator.frequency.setValueAtTime(frequency, start);
+      gain.gain.setValueAtTime(0.0001, start);
+      gain.gain.exponentialRampToValueAtTime(volume || 0.045, start + 0.018);
+      gain.gain.exponentialRampToValueAtTime(0.0001, start + duration);
+      oscillator.connect(gain).connect(context.destination);
+      oscillator.start(start);
+      oscillator.stop(start + duration + 0.02);
+    }
+    play(events, season) {
+      if (!this.enabled || !events.length) return;
+      if (events.includes("invalid") || events.includes("bump")) { this.tone(155, 0, .12, "triangle", .025); return; }
+      if (events.includes("season")) {
+        const roots = { winter: 392, spring: 440, summer: 523.25, autumn: 349.23 };
+        const root = roots[season] || 440;
+        this.tone(root, 0, .38, "sine", .035);
+        this.tone(root * 1.25, .09, .42, "sine", .025);
+        this.tone(root * 1.5, .18, .48, "sine", .02);
+      } else if (events.includes("pushed")) {
+        this.tone(130, 0, .1, "triangle", .045);
+        this.tone(195, .035, .12, "sine", .02);
+      } else if (events.includes("step")) {
+        this.tone(260 + Math.random() * 25, 0, .055, "sine", .014);
+      }
+      if (events.includes("fruitDropped")) this.tone(105, .12, .2, "triangle", .055);
+      if (events.includes("undo")) this.tone(330, 0, .16, "sine", .025);
+      if (events.includes("reset")) { this.tone(294, 0, .2, "sine", .025); this.tone(220, .1, .25, "sine", .02); }
+      if (events.includes("seed")) [660, 825, 990].forEach((note, index) => this.tone(note, index * .08, .42, "sine", .035));
+      if (events.includes("complete")) [392, 493.88, 587.33, 783.99].forEach((note, index) => this.tone(note, index * .12, .75, "sine", .04));
+    }
+  }
+
+  const audio = new GentleAudio();
+  const renderer = new window.ConservatoryRenderer($("garden-canvas"), LEVELS);
+
+  function showToast(message, duration) {
+    clearTimeout(toastTimer);
+    const element = $("toast");
+    element.textContent = message;
+    element.classList.add("visible");
+    toastTimer = setTimeout(function () {
+      element.classList.remove("visible");
+    }, duration || 6000);
+  }
+
+  function showSeasonToast(message) {
+    clearTimeout(seasonToastTimer);
+    const element = $("season-toast");
+    element.textContent = message;
+    element.classList.add("visible");
+    seasonToastTimer = setTimeout(function () { element.classList.remove("visible"); }, 1900);
+  }
+
+  function buildGardenNav() {
+    const nav = $("garden-nav");
+    nav.textContent = "";
+    LEVELS.forEach(function (level, index) {
+      const button = document.createElement("button");
+      button.type = "button";
+      button.className = "garden-node" + (index === LEVELS.length - 1 ? " final" : "");
+      button.setAttribute("aria-current", String(index === selected));
+      button.setAttribute("aria-label", localized(level, "name") + (isComplete(index) ? " — " + t("restored") : ""));
+      button.innerHTML = "<span class=\"node-number\">" + (isComplete(index) ? "✦" : roman(index + 1)) + "</span><span class=\"node-state\">" + (isComplete(index) ? t("restored") : (isUnlocked(index) ? "·" : "◇")) + "</span>";
+      button.addEventListener("click", function () { selectGarden(index); });
+      nav.appendChild(button);
+    });
+  }
+
+  function selectGarden(index) {
+    selected = index;
+    if (mode === "hub" && !isUnlocked(index)) showToast(t("locked"));
+    persist();
+    updateUI();
+  }
+
+  function updateUI() {
+    $("app").dataset.mode = mode;
+    $("app").dataset.season = game ? game.state.season : "spring";
+    $("app").dataset.level = game ? game.state.levelId : "";
+    $("progress-count").textContent = save.completed.length + " / " + LEVELS.length;
+    $("progress-fill").style.width = (save.completed.length / LEVELS.length * 100) + "%";
+    $("hub-panel").hidden = mode !== "hub";
+    $("level-panel").hidden = mode !== "level";
+    $("garden-nav").hidden = mode !== "hub";
+    $("season-dock").hidden = mode !== "level";
+    $("hub-button").hidden = mode !== "level";
+    $("click-tip").hidden = mode !== "level";
+
+    if (mode === "hub") {
+      const level = LEVELS[selected];
+      $("scene-eyebrow").textContent = t("central");
+      $("scene-title").textContent = t("title");
+      $("selected-number").textContent = (selected === LEVELS.length - 1 ? t("finalGarden") : t("garden")) + " " + roman(selected + 1);
+      $("selected-title").textContent = localized(level, "name");
+      $("selected-subtitle").textContent = localized(level, "subtitle") || t("finalSubtitle");
+      const enterLabel = $("enter-button").querySelector("[data-i18n]");
+      const canResume = save.active && save.active.levelId === level.id;
+      enterLabel.textContent = t(canResume ? "resumeGarden" : "enterGarden");
+      $("enter-button").disabled = !isUnlocked(selected);
+      buildGardenNav();
+    } else if (game) {
+      const level = game.level;
+      $("scene-eyebrow").textContent = (level.number === LEVELS.length ? t("finalGarden") : t("garden")) + " " + roman(level.number);
+      $("scene-title").textContent = localized(level, "name");
+      $("move-count").textContent = game.state.moves + " " + t("moves");
+      $("seed-status").textContent = t(game.state.seedTaken ? "seedFound" : "seedWaiting");
+      $("seed-status").classList.toggle("taken", game.state.seedTaken);
+      $("undo-button").disabled = !game.history.length;
+      $("hint-step").textContent = hintStage + " / 3";
+      $("hint-text").textContent = hintStage ? level.hints[language][hintStage - 1] : t("hintPrompt");
+      $("hint-button").hidden = hintStage >= 3;
+      document.querySelectorAll(".season-button").forEach(function (button) {
+        button.setAttribute("aria-pressed", String(button.dataset.season === game.state.season));
+      });
+    }
+  }
+
+  function applyLanguage(next) {
+    language = TEXT[next] ? next : "en";
+    document.documentElement.lang = language;
+    $("language").value = language;
+    document.querySelectorAll("[data-i18n]").forEach(function (element) {
+      const key = element.dataset.i18n;
+      if (TEXT.en[key]) element.textContent = t(key);
+    });
+    document.querySelectorAll("[data-i18n-aria]").forEach(function (element) {
+      element.setAttribute("aria-label", t(element.dataset.i18nAria));
+    });
+    document.title = t("title");
+    persist();
+    updateUI();
+  }
+
+  function clearPath() {
+    pathQueue = [];
+    clearInterval(pathTimer);
+    pathTimer = null;
+  }
+
+  function enterLevel(index, fresh) {
+    clearTimeout(completionTimer);
+    clearPath();
+    if (!isUnlocked(index)) { showToast(t("locked")); return; }
+    selected = index;
+    const level = LEVELS[index];
+    game = null;
+    if (!fresh && save.active && save.active.levelId === level.id) {
+      game = Core.Game.restore(level, save.active.data);
+      if (game.state.completed) game = null;
+    }
+    if (!game) game = new Core.Game(level);
+    mode = "level";
+    hintStage = 0;
+    lastVisual = null;
+    $("rule-message").hidden = true;
+    renderer.setSeason(game.state.season, true);
+    save.active = { levelId: level.id, data: game.serialize() };
+    persist();
+    updateUI();
+    $("garden-canvas").focus({ preventScroll: true });
+  }
+
+  function closeDialog(id) {
+    const dialog = $(id);
+    if (dialog.open) dialog.close();
+  }
+
+  function showHub(selectNext) {
+    clearTimeout(completionTimer);
+    clearPath();
+    closeDialog("complete-dialog");
+    closeDialog("conclusion-dialog");
+    mode = "hub";
+    game = null;
+    lastVisual = null;
+    if (selectNext) selected = firstUnresolved();
+    renderer.setSeason("spring", true);
+    persist();
+    updateUI();
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  }
+
+  function finishLevel() {
+    const index = selected;
+    if (!save.completed.includes(game.level.id)) save.completed.push(game.level.id);
+    save.active = null;
+    persist();
+    $("complete-title").textContent = localized(game.level, "name");
+    completionTimer = setTimeout(function () {
+      if (mode !== "level" || !game || !game.state.completed) return;
+      $("complete-dialog").showModal();
+    }, 650);
+  }
+
+  function dispatch(action, fromPath) {
+    if (mode !== "level" || !game || document.querySelector("dialog[open]")) return { ok: false };
+    if (!fromPath) clearPath();
+    const before = Core.clone(game.state);
+    const result = game.dispatch(action);
+    if (!result.ok) {
+      const message = t(result.reason) || t("blocked");
+      $("rule-message").textContent = message;
+      $("rule-message").hidden = false;
+      showToast(message);
+      audio.play(result.events || ["invalid"], game.state.season);
+      if (fromPath) clearPath();
+      return result;
+    }
+    $("rule-message").hidden = true;
+    lastVisual = { before: before, after: Core.clone(game.state), start: performance.now() };
+    if (before.season !== game.state.season) {
+      renderer.setSeason(game.state.season, false);
+      showSeasonToast(t(game.state.season + "Arrival"));
+    } else if (result.events.includes("undo")) {
+      renderer.setSeason(game.state.season, false);
+      showToast(t("undoDone"), 1200);
+    } else if (result.events.includes("reset")) {
+      renderer.setSeason(game.state.season, false);
+      hintStage = 0;
+      showToast(t("resetDone"));
+    } else if (result.events.includes("seed")) {
+      showToast(t("seedChime"), 1800);
+    }
+    save.active = game.state.completed ? null : { levelId: game.level.id, data: game.serialize() };
+    audio.play(result.events, game.state.season);
+    hoverInfo = null;
+    persist();
+    updateUI();
+    if (result.events.includes("complete")) finishLevel();
+    return result;
+  }
+
+  function revealHint() {
+    if (mode !== "level" || hintStage >= 3) return;
+    hintStage += 1;
+    updateUI();
+  }
+
+  function runPath(actions) {
+    clearPath();
+    if (!actions || !actions.length) return;
+    pathQueue = actions.slice();
+    const step = function () {
+      if (!pathQueue.length || mode !== "level") { clearPath(); return; }
+      const action = pathQueue.shift();
+      const result = dispatch(action, true);
+      if (!result.ok || result.events && result.events.includes("complete")) clearPath();
+    };
+    step();
+    pathTimer = setInterval(step, 145);
+  }
+
+  function canvasPoint(event) {
+    const rect = $("garden-canvas").getBoundingClientRect();
+    return { x: event.clientX - rect.left, y: event.clientY - rect.top };
+  }
+
+  function handleCanvasAction(event) {
+    const point = canvasPoint(event);
+    const region = renderer.pick(point.x, point.y);
+    if (!region) return;
+    if (mode === "hub" && region.type === "hubLevel") {
+      if (selected === region.index && isUnlocked(region.index)) enterLevel(region.index);
+      else selectGarden(region.index);
+      return;
+    }
+    if (mode === "level" && region.type === "tile") {
+      const path = Core.findPath(game.state, game.level, { x: region.x, y: region.y });
+      if (path === null) showToast(t("noPath"));
+      else runPath(path);
+      $("garden-canvas").focus({ preventScroll: true });
+    }
+  }
+
+  $("garden-canvas").addEventListener("pointerdown", handleCanvasAction);
+  $("garden-canvas").addEventListener("pointermove", function (event) {
+    const point = canvasPoint(event);
+    const region = renderer.pick(point.x, point.y);
+    hoverInfo = null;
+    if (mode === "level" && region && region.type === "tile" && !pathQueue.length) {
+      const actions = Core.findPath(game.state, game.level, { x: region.x, y: region.y });
+      if (actions && actions.length) hoverInfo = { destination: region, actions: actions };
+    }
+    $("garden-canvas").style.cursor = region ? "pointer" : "default";
+  });
+  $("garden-canvas").addEventListener("pointerleave", function () { hoverInfo = null; });
+
+  $("enter-button").addEventListener("click", function () { enterLevel(selected); });
+  $("hub-button").addEventListener("click", function () { showHub(false); });
+  $("brand-button").addEventListener("click", function () { showHub(false); });
+  $("undo-button").addEventListener("click", function () { dispatch({ type: "undo" }); });
+  $("reset-button").addEventListener("click", function () { dispatch({ type: "reset" }); });
+  $("hint-button").addEventListener("click", revealHint);
+  $("help-button").addEventListener("click", function () { clearPath(); $("help-dialog").showModal(); });
+  $("language").addEventListener("change", function (event) { applyLanguage(event.target.value); });
+  $("sound-button").addEventListener("click", function () {
+    audio.enabled = !audio.enabled;
+    save.sound = audio.enabled;
+    $("sound-button").setAttribute("aria-pressed", String(audio.enabled));
+    $("sound-icon").textContent = audio.enabled ? "♪" : "∅";
+    showToast(t(audio.enabled ? "soundEnabled" : "soundDisabled"), 1200);
+    if (audio.enabled) audio.play(["seed"], "spring");
+    persist();
+  });
+  document.querySelectorAll(".season-button").forEach(function (button) {
+    button.addEventListener("click", function () { dispatch({ type: "season", season: button.dataset.season }); });
+  });
+  document.querySelectorAll("[data-close]").forEach(function (button) {
+    button.addEventListener("click", function () { closeDialog(button.dataset.close); });
+  });
+  $("continue-button").addEventListener("click", function () {
+    const showConclusion = save.completed.length === LEVELS.length && selected === LEVELS.length - 1 && !save.conclusionSeen;
+    if (showConclusion) { save.conclusionSeen = true; persist(); }
+    showHub(true);
+    if (showConclusion) setTimeout(function () { $("conclusion-dialog").showModal(); }, 350);
+  });
+  $("replay-button").addEventListener("click", function () {
+    closeDialog("complete-dialog");
+    save.active = null;
+    enterLevel(selected, true);
+  });
+  $("wander-button").addEventListener("click", function () { closeDialog("conclusion-dialog"); });
+
+  document.addEventListener("keydown", function (event) {
+    if (document.querySelector("dialog[open]")) return;
+    const key = event.key.toLowerCase();
+    if (key === "m") {
+      event.preventDefault();
+      $("sound-button").click();
+      return;
+    }
+    if (key === "?" || event.key === "F1") {
+      event.preventDefault();
+      $("help-button").click();
+      return;
+    }
+    if (mode !== "level") {
+      if (event.key === "Enter") { event.preventDefault(); enterLevel(selected); }
+      if (event.key === "ArrowRight" || event.key === "ArrowLeft") {
+        event.preventDefault();
+        selectGarden((selected + (event.key === "ArrowRight" ? 1 : -1) + LEVELS.length) % LEVELS.length);
+      }
+      return;
+    }
+    const movement = { ArrowUp: "up", ArrowDown: "down", ArrowLeft: "left", ArrowRight: "right", KeyW: "up", KeyS: "down", KeyA: "left", KeyD: "right" }[event.code];
+    if (movement) {
+      event.preventDefault();
+      dispatch({ type: "move", direction: movement });
+      return;
+    }
+    const season = { Digit1: "winter", Digit2: "spring", Digit3: "summer", Digit4: "autumn", Numpad1: "winter", Numpad2: "spring", Numpad3: "summer", Numpad4: "autumn" }[event.code];
+    if (season) {
+      event.preventDefault();
+      dispatch({ type: "season", season: season });
+      return;
+    }
+    if (event.code === "KeyZ" || (event.ctrlKey && key === "z") || event.key === "Backspace") {
+      event.preventDefault();
+      dispatch({ type: "undo" });
+    } else if (event.code === "KeyR") {
+      event.preventDefault();
+      dispatch({ type: "reset" });
+    } else if (event.code === "KeyH") {
+      event.preventDefault();
+      revealHint();
+    } else if (event.key === "Escape") {
+      showHub(false);
+    }
+  });
+
+  document.addEventListener("visibilitychange", function () {
+    if (document.hidden) clearPath();
+  });
+
+  renderer.onFrame = function (time) {
+    renderer.draw({ mode: mode, game: game, selected: selected, completed: save.completed, hover: hoverInfo, visual: lastVisual, time: time });
+  };
+
+  applyLanguage(language);
+  $("sound-button").setAttribute("aria-pressed", String(audio.enabled));
+  $("sound-icon").textContent = audio.enabled ? "♪" : "∅";
+  if (!isUnlocked(selected)) selected = firstUnresolved();
+  showHub(false);
+  renderer.start();
+})();
+</script>
+</body>
+</html>

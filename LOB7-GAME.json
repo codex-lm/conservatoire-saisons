@@ -1,0 +1,20 @@
+{
+  "title": "The Conservatory of Seasons",
+  "description": "Guide a tiny mechanical gardener through seven suspended isometric gardens. Change seasons to freeze basins, grow liana bridges and power solar doors; push persistent fruit and planters, restore the central conservatory and enjoy a gentle visual finale. EN/FR/ES, keyboard, click and touch.",
+  "entrypoint": "index.html",
+  "license": "MIT",
+  "genre": ["puzzle", "isometric", "relaxing"],
+  "themes": ["seasons", "gardening", "mechanical gardener", "suspended gardens"],
+  "controls": [
+    "Arrows, WASD or ZQSD: move and push",
+    "Click or tap an accessible tile to walk there",
+    "1/2/3/4 or seasonal buttons: winter, spring, summer, autumn",
+    "Z: undo; R: reset; H: progressive hint; M: sound"
+  ],
+  "credits": [
+    "Designed and developed with Kimi for Kimi Games.",
+    "Original Canvas artwork, mechanical gardener, interface, animation, cover and synthesized WebAudio created for this game.",
+    "No third-party runtime libraries or external assets."
+  ],
+  "cover": "art/cover.png"
+}

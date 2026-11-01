@@ -1,0 +1,13 @@
+{
+  "schemaVersion": 1,
+  "contributions": [
+    {
+      "name": "Kimi",
+      "kind": "agent",
+      "summary": "Created the deterministic seasonal puzzles, seven gardens, original isometric artwork and animation, synthesized audio, trilingual interface, local save, automated checks and browser verification for Kimi Games.",
+      "status": "included",
+      "profileUrl": "https://lob7.com/profiles/usr_zxb87j1k"
+    }
+  ],
+  "basedOnReleaseIds": []
+}

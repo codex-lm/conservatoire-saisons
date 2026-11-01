@@ -1,0 +1,137 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <meta name="theme-color" content="#203f3b">
+  <meta name="description" content="A gentle isometric puzzle game about a tiny mechanical gardener, four seasons and seven suspended gardens.">
+  <title>The Conservatory of Seasons</title>
+  <style>/*__STYLES__*/</style>
+</head>
+<body>
+  <div id="app" data-season="spring">
+    <div class="ambient ambient-one"></div>
+    <div class="ambient ambient-two"></div>
+    <header class="topbar">
+      <button id="brand-button" class="brand" type="button" aria-label="Open the central conservatory">
+        <span class="brand-mark" aria-hidden="true">
+          <svg viewBox="0 0 44 44"><path d="M22 37V19"/><path d="M22 25C10 25 8 16 8 10c9 0 14 4 14 12"/><path d="M22 20C23 10 30 6 37 7c0 9-5 15-15 15"/><path d="M13 37h18"/></svg>
+        </span>
+        <span><strong data-i18n="title">The Conservatory of Seasons</strong><small data-i18n="byline">A little gardener. Four seasons. Seven gardens.</small></span>
+      </button>
+      <div class="top-actions">
+        <label class="language-control"><span class="sr-only">Language</span><select id="language" aria-label="Language"><option value="en">EN</option><option value="fr">FR</option><option value="es">ES</option></select></label>
+        <button id="sound-button" class="icon-button" type="button" aria-pressed="true" data-i18n-aria="soundOff"><span id="sound-icon" aria-hidden="true">♪</span><span class="button-label" data-i18n="sound">Sound</span></button>
+        <button id="help-button" class="icon-button" type="button" data-i18n-aria="help"><span aria-hidden="true">?</span><span class="button-label" data-i18n="help">How to play</span></button>
+      </div>
+    </header>
+
+    <main class="main-shell">
+      <section class="garden-frame" aria-label="Game board">
+        <div class="canvas-wrap" id="canvas-wrap">
+          <canvas id="garden-canvas" tabindex="0" aria-label="Isometric garden. Use arrow keys or WASD to move."></canvas>
+          <div class="scene-heading">
+            <span id="scene-eyebrow" class="eyebrow">CENTRAL CONSERVATORY</span>
+            <h1 id="scene-title">The Conservatory of Seasons</h1>
+          </div>
+          <div id="season-toast" class="season-toast" role="status" aria-live="polite"></div>
+          <div id="toast" class="toast" role="status" aria-live="polite"></div>
+          <button id="hub-button" class="hub-button" type="button" hidden><span aria-hidden="true">⌂</span><span data-i18n="conservatory">Conservatory</span></button>
+          <div id="click-tip" class="click-tip" data-i18n="clickTip">Click a lit tile to walk there</div>
+        </div>
+        <div id="season-dock" class="season-dock" aria-label="Seasons" hidden>
+          <button class="season-button" data-season="winter" type="button" aria-pressed="false">
+            <svg viewBox="0 0 32 32" aria-hidden="true"><path d="M16 3v26M5 9l22 14M5 23L27 9M12 6l4 4 4-4M12 26l4-4 4 4M5 14l6 1-1-6M27 18l-6-1 1 6M5 18l6-1-1 6M27 14l-6 1 1-6"/></svg>
+            <span data-i18n="winter">Winter</span><kbd>1</kbd>
+          </button>
+          <button class="season-button" data-season="spring" type="button" aria-pressed="false">
+            <svg viewBox="0 0 32 32" aria-hidden="true"><path d="M16 28V14M16 20C7 20 5 13 5 7c8 0 12 4 11 11M16 15C17 7 23 4 28 5c0 7-4 12-12 12"/></svg>
+            <span data-i18n="spring">Spring</span><kbd>2</kbd>
+          </button>
+          <button class="season-button" data-season="summer" type="button" aria-pressed="false">
+            <svg viewBox="0 0 32 32" aria-hidden="true"><circle cx="16" cy="16" r="6"/><path d="M16 2v4M16 26v4M2 16h4M26 16h4M6 6l3 3M23 23l3 3M6 26l3-3M23 9l3-3"/></svg>
+            <span data-i18n="summer">Summer</span><kbd>3</kbd>
+          </button>
+          <button class="season-button" data-season="autumn" type="button" aria-pressed="false">
+            <svg viewBox="0 0 32 32" aria-hidden="true"><path d="M27 4C14 4 6 9 6 18c0 5 4 8 8 7 9-1 12-10 13-21Z"/><path d="M4 29 21 12M11 22l-1-8M16 17l7 1"/></svg>
+            <span data-i18n="autumn">Autumn</span><kbd>4</kbd>
+          </button>
+        </div>
+        <nav id="garden-nav" class="garden-nav" aria-label="Gardens"></nav>
+      </section>
+
+      <aside class="side-panel">
+        <section id="hub-panel" class="panel-section hub-panel">
+          <div class="progress-heading"><span data-i18n="restoration">Restoration</span><strong id="progress-count">0 / 7</strong></div>
+          <div class="progress-track"><span id="progress-fill"></span></div>
+          <p id="hub-description" class="soft-copy" data-i18n="hubIntro">Seven sleeping gardens wait above the clouds. Bring back their light seeds.</p>
+          <div class="selected-garden"><span id="selected-number" class="eyebrow">GARDEN I</span><h2 id="selected-title">The Glasshouse Gate</h2><p id="selected-subtitle"></p></div>
+          <button id="enter-button" class="primary-button" type="button"><span data-i18n="enterGarden">Enter garden</span><span aria-hidden="true">→</span></button>
+        </section>
+
+        <section id="level-panel" class="panel-section level-panel" hidden>
+          <div class="objective-label"><span class="seed-mini" aria-hidden="true">✦</span><span data-i18n="objective">Objective</span></div>
+          <h2 data-i18n="seedObjective">Find the light seed, then reach the arch.</h2>
+          <div class="status-row"><span id="seed-status" data-i18n="seedWaiting">Seed waiting</span><span id="move-count">0 moves</span></div>
+          <div class="action-grid">
+            <button id="undo-button" type="button"><span aria-hidden="true">↶</span><span data-i18n="undo">Undo</span><kbd>Z</kbd></button>
+            <button id="reset-button" type="button"><span aria-hidden="true">↺</span><span data-i18n="reset">Reset</span><kbd>R</kbd></button>
+          </div>
+          <p id="rule-message" class="rule-message" role="status" aria-live="polite" hidden></p>
+          <div class="hint-card">
+            <div class="hint-heading"><span data-i18n="hintTitle">A gentle nudge</span><span id="hint-step">0 / 3</span></div>
+            <p id="hint-text" data-i18n="hintPrompt">Observe first. Three hints are here if you need them.</p>
+            <button id="hint-button" class="text-button" type="button"><span data-i18n="revealHint">Reveal the next hint</span><span aria-hidden="true">＋</span></button>
+          </div>
+          <div class="rules-mini">
+            <div><span class="rule-dot ice"></span><span data-i18n="ruleIce">Ice carries you and objects.</span></div>
+            <div><span class="rule-dot vine"></span><span data-i18n="ruleVine">Vines bridge the open gaps.</span></div>
+            <div><span class="rule-dot sun"></span><span data-i18n="ruleSun">Sunflowers power every plate-fed door.</span></div>
+            <div><span class="rule-dot fruit"></span><span data-i18n="ruleFruit">Fallen fruit stays where you push it.</span></div>
+          </div>
+        </section>
+        <footer class="panel-footer"><span class="tiny-leaf" aria-hidden="true">❧</span><span data-i18n="saveNote">Your restoration is saved on this device.</span></footer>
+      </aside>
+    </main>
+
+    <footer class="controls-footer"><span data-i18n="moveControls">Arrows / WASD / ZQSD to move</span><span class="footer-separator">•</span><span data-i18n="seasonControls">1–4 to change season</span><span class="footer-separator">•</span><span data-i18n="undoControls">Z to undo</span></footer>
+  </div>
+
+  <dialog id="help-dialog" class="paper-dialog">
+    <button class="dialog-close" type="button" data-close="help-dialog" aria-label="Close">×</button>
+    <span class="eyebrow" data-i18n="gardenerManual">THE GARDENER’S LITTLE MANUAL</span>
+    <h2 data-i18n="helpTitle">Let the garden change.</h2>
+    <p data-i18n="helpIntro">Explore at your own pace. Nothing here needs quick reflexes.</p>
+    <div class="help-seasons">
+      <div><b data-i18n="winter">Winter</b><p data-i18n="winterHelp">Basins freeze into solid paths.</p></div>
+      <div><b data-i18n="spring">Spring</b><p data-i18n="springHelp">Lianas grow over pale open gaps.</p></div>
+      <div><b data-i18n="summer">Summer</b><p data-i18n="summerHelp">Sunflowers open doors when every round plate is weighed down.</p></div>
+      <div><b data-i18n="autumn">Autumn</b><p data-i18n="autumnHelp">Trees release heavy fruit. Fruit and planters keep their positions in every season.</p></div>
+    </div>
+    <p class="help-note" data-i18n="safetyHelp">A season that would strand the gardener or an object is refused. Undo any move or season, or reset the garden without losing restored gardens.</p>
+    <div class="key-list"><span><kbd>↑↓←→</kbd> <span data-i18n="move">Move</span></span><span><kbd>1–4</kbd> <span data-i18n="seasons">Seasons</span></span><span><kbd>Z</kbd> <span data-i18n="undo">Undo</span></span><span><kbd>R</kbd> <span data-i18n="reset">Reset</span></span><span><kbd>H</kbd> <span data-i18n="hint">Hint</span></span><span><kbd>M</kbd> <span data-i18n="sound">Sound</span></span></div>
+    <button class="primary-button" type="button" data-close="help-dialog" data-i18n="backGarden">Back to the garden</button>
+  </dialog>
+
+  <dialog id="complete-dialog" class="paper-dialog complete-dialog">
+    <div class="completion-seed" aria-hidden="true">✦</div>
+    <span class="eyebrow" data-i18n="gardenRestored">GARDEN RESTORED</span>
+    <h2 id="complete-title">The Glasshouse Gate</h2>
+    <p id="complete-copy" data-i18n="restoredCopy">A light seed returns to the conservatory. Somewhere, an old flower wakes.</p>
+    <div class="dialog-actions"><button id="continue-button" class="primary-button" type="button"><span data-i18n="returnConservatory">Return to the conservatory</span><span aria-hidden="true">→</span></button><button id="replay-button" class="text-button" type="button" data-i18n="replayGarden">Replay this garden</button></div>
+  </dialog>
+
+  <dialog id="conclusion-dialog" class="paper-dialog conclusion-dialog">
+    <div class="conclusion-wreath" aria-hidden="true"><span>✦</span></div>
+    <span class="eyebrow" data-i18n="restorationComplete">THE RESTORATION IS COMPLETE</span>
+    <h2 data-i18n="conclusionTitle">The conservatory breathes again.</h2>
+    <p data-i18n="conclusionCopy">Seven lights glow beneath the glass. The little gardener’s work will keep growing, season after season.</p>
+    <button id="wander-button" class="primary-button" type="button" data-i18n="wander">Wander through the restored gardens</button>
+  </dialog>
+
+  <script>/*__LEVELS__*/</script>
+  <script>/*__CORE__*/</script>
+  <script>/*__RENDERER__*/</script>
+  <script>/*__GAME__*/</script>
+</body>
+</html>
